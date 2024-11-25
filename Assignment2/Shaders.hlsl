@@ -22,6 +22,12 @@ cbuffer cbGameObjectInfo : register(b2)
     uint gnTexturesMask : packoffset(c8);
 };
 
+cbuffer cbFrameworkInfo : register(b3)
+{
+    float gfCurrentTime : packoffset(c0.x);
+    float gfElapsedTime : packoffset(c0.y);
+};
+
 #include "Light.hlsl"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -187,11 +193,10 @@ VS_BULLET_OUTPUT VSBullet(VS_BULLET_INPUT input)
 }
 
 Texture2D gtxtBulletTexture : register(t5);
-SamplerState gssLinear : register(s0);
 
 float4 PSBullet(VS_BULLET_OUTPUT input) : SV_TARGET
 {
-    float4 cColor = gtxtBulletTexture.Sample(gssLinear, input.worldPos.xy);
+    float4 cColor = gtxtBulletTexture.Sample(gssWrap, input.worldPos.xy);
     
     return cColor;
 }
@@ -220,33 +225,11 @@ VS_SPRITE_TEXTURED_OUTPUT VSTextured(VS_SPRITE_TEXTURED_INPUT input)
     return (output);
 }
 
-/*
-float4 PSTextured(VS_SPRITE_TEXTURED_OUTPUT input, uint nPrimitiveID : SV_PrimitiveID) : SV_TARGET
-{
-	float4 cColor;
-	if (nPrimitiveID < 2)
-		cColor = gtxtTextures[0].Sample(gWrapSamplerState, input.uv);
-	else if (nPrimitiveID < 4)
-		cColor = gtxtTextures[1].Sample(gWrapSamplerState, input.uv);
-	else if (nPrimitiveID < 6)
-		cColor = gtxtTextures[2].Sample(gWrapSamplerState, input.uv);
-	else if (nPrimitiveID < 8)
-		cColor = gtxtTextures[3].Sample(gWrapSamplerState, input.uv);
-	else if (nPrimitiveID < 10)
-		cColor = gtxtTextures[4].Sample(gWrapSamplerState, input.uv);
-	else
-		cColor = gtxtTextures[5].Sample(gWrapSamplerState, input.uv);
-	float4 cColor = gtxtTextures[NonUniformResourceIndex(nPrimitiveID/2)].Sample(gWrapSamplerState, input.uv);
-
-	return(cColor);
-}
-*/
 Texture2D<float4> gtxtTerrainBaseTexture : register(t1);
 Texture2D<float4> gtxtTerrainDetailTextures : register(t2);
 Texture2D<float4> gtxtTerrainAlphaTexture : register(t3);
 
 Texture2D gtxtTexture : register(t0);
-SamplerState gSamplerState : register(s0);
 struct VS_TERRAIN_INPUT
 {
     float3 position : POSITION;
@@ -277,9 +260,9 @@ VS_TERRAIN_OUTPUT VSTerrain(VS_TERRAIN_INPUT input)
 
 float4 PSTerrain(VS_TERRAIN_OUTPUT input) : SV_TARGET
 {
-    float4 cBaseTexColor = gtxtTerrainBaseTexture.Sample(gSamplerState, input.uv0);
-    float4 cDetailTexColor = gtxtTerrainDetailTextures.Sample(gSamplerState, input.uv1);
-    float fAlpha = gtxtTerrainAlphaTexture.Sample(gSamplerState, input.uv0);
+    float4 cBaseTexColor = gtxtTerrainBaseTexture.Sample(gssWrap, input.uv0);
+    float4 cDetailTexColor = gtxtTerrainDetailTextures.Sample(gssWrap, input.uv1);
+    float fAlpha = gtxtTerrainAlphaTexture.Sample(gssWrap, input.uv0);
     
     float4 cColor = saturate(lerp(cBaseTexColor, cDetailTexColor, fAlpha));
 
@@ -313,10 +296,48 @@ VS_TEXTURED_OUTPUT VSTextureToScreen(VS_TEXTURED_INPUT input)
 float4 PSTextureToScreen(VS_TEXTURED_OUTPUT input) : SV_TARGET
 {
     //float4 cColor = { 1.0f, 1.0f, 0.0f, 1.0f };
-    float4 cColor = gtxtTexture.Sample(gSamplerState, input.uv);
+    float4 cColor = gtxtTexture.Sample(gssWrap, input.uv);
 
     if ((cColor.r > 0.85f) && (cColor.g > 0.85f) && (cColor.b > 0.85f))
         discard;
 	
+    return (cColor);
+}
+
+#define _WITH_BILLBOARD_ANIMATION
+
+VS_TEXTURED_OUTPUT VSBillboard(VS_TEXTURED_INPUT input)
+{
+    VS_TEXTURED_OUTPUT output;
+
+#ifdef _WITH_CONSTANT_BUFFER_SYNTAX
+	output.position = mul(mul(mul(float4(input.position, 1.0f), gcbGameObjectInfo.mtxWorld), gcbCameraInfo.mtxView), gcbCameraInfo.mtxProjection);
+#else
+    output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
+#endif
+
+#ifdef _WITH_BILLBOARD_ANIMATION
+    if (input.uv.y < 0.7f)
+    {
+        float fShift = 0.0f;
+        int nResidual = ((int) gfCurrentTime % 4);
+        if (nResidual == 1)
+            fShift = -gfElapsedTime * 0.5f;
+        if (nResidual == 3)
+            fShift = +gfElapsedTime * 0.5f;
+        input.uv.x += fShift;
+    }
+#endif
+    output.uv = input.uv;
+
+    return (output);
+}
+
+float4 PSBillboard(VS_TEXTURED_OUTPUT input) : SV_TARGET
+{
+    float4 cColor = gtxtTexture.SampleLevel(gssWrap, input.uv, 0);
+    if (cColor.a <= 0.3f)
+        discard;
+
     return (cColor);
 }

@@ -384,6 +384,14 @@ void CObjectsShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera*
 	CShader::Render(pd3dCommandList, pCamera, nPipelineState);
 }
 
+void CObjectsShader::CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
+{
+	UINT ncbElementBytes = ((sizeof(CB_GAMEOBJECT_INFO) + 255) & ~255); //256ÀÇ ¹è¼ö
+	m_pd3dcbGameObjects = ::CreateBufferResource(pd3dDevice, pd3dCommandList, NULL, ncbElementBytes * m_nObjects, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, NULL);
+
+	m_pd3dcbGameObjects->Map(0, NULL, (void**)&m_pcbMappedGameObjects);
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 CPlayerShader::CPlayerShader()
@@ -624,14 +632,27 @@ D3D12_RASTERIZER_DESC CBillboardObjectsShader::CreateRasterizerState()
 	return(d3dRasterizerDesc);
 }
 
-D3D12_SHADER_BYTECODE CBillboardObjectsShader::CreateVertexShader(ID3DBlob** ppd3dShaderBlob)
+D3D12_SHADER_BYTECODE CBillboardObjectsShader::CreateVertexShader()
 {
-	return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "VSBillboard", "vs_5_1", ppd3dShaderBlob));
+	return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "VSBillboard", "vs_5_1", &m_pd3dVertexShaderBlob));
 }
 
-D3D12_SHADER_BYTECODE CBillboardObjectsShader::CreatePixelShader(ID3DBlob** ppd3dShaderBlob)
+D3D12_SHADER_BYTECODE CBillboardObjectsShader::CreatePixelShader()
 {
-	return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "PSBillboard", "ps_5_1", ppd3dShaderBlob));
+	return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "PSBillboard", "ps_5_1", &m_pd3dPixelShaderBlob));
+}
+
+void CBillboardObjectsShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature)
+{
+	m_nPipelineStates = 1;
+	m_ppd3dPipelineStates = new ID3D12PipelineState * [m_nPipelineStates];
+
+	CShader::CreateShader(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
+
+	if (m_pd3dVertexShaderBlob) m_pd3dVertexShaderBlob->Release();
+	if (m_pd3dPixelShaderBlob) m_pd3dPixelShaderBlob->Release();
+
+	if (m_d3dPipelineStateDesc.InputLayout.pInputElementDescs) delete[] m_d3dPipelineStateDesc.InputLayout.pInputElementDescs;
 }
 
 void CBillboardObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, void* pContext)
@@ -687,13 +708,13 @@ void CBillboardObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12Graph
 	D3D12_GPU_DESCRIPTOR_HANDLE d3dCbvGPUDescriptorNextHandle = CScene::GetGPUCbvDescriptorNextHandle();
 	CScene::CreateConstantBufferViews(pd3dDevice, m_nObjects, m_pd3dcbGameObjects, ncbElementBytes);
 
-	CScene::CreateShaderResourceViews(pd3dDevice, ppGrassTextures[0], 0, 3);
-	CScene::CreateShaderResourceViews(pd3dDevice, ppGrassTextures[1], 0, 3);
-	CScene::CreateShaderResourceViews(pd3dDevice, ppFlowerTextures[0], 0, 3);
-	CScene::CreateShaderResourceViews(pd3dDevice, ppFlowerTextures[1], 0, 3);
-	CScene::CreateShaderResourceViews(pd3dDevice, ppTreeTextures[0], 0, 3);
-	CScene::CreateShaderResourceViews(pd3dDevice, ppTreeTextures[1], 0, 3);
-	CScene::CreateShaderResourceViews(pd3dDevice, ppTreeTextures[2], 0, 3);
+	CScene::CreateShaderResourceViews(pd3dDevice, ppGrassTextures[0], 0, 5);
+	CScene::CreateShaderResourceViews(pd3dDevice, ppGrassTextures[1], 0, 5);
+	CScene::CreateShaderResourceViews(pd3dDevice, ppFlowerTextures[0], 0, 5);
+	CScene::CreateShaderResourceViews(pd3dDevice, ppFlowerTextures[1], 0, 5);
+	CScene::CreateShaderResourceViews(pd3dDevice, ppTreeTextures[0], 0, 5);
+	CScene::CreateShaderResourceViews(pd3dDevice, ppTreeTextures[1], 0, 5);
+	CScene::CreateShaderResourceViews(pd3dDevice, ppTreeTextures[2], 0, 5);
 
 	CHeightMapTerrain* pTerrain = (CHeightMapTerrain*)pContext;
 
@@ -761,7 +782,7 @@ void CBillboardObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12Graph
 			{
 				pBillboardObject = new CGrassObject();
 
-				pBillboardObject->SetMesh(0, pMesh);
+				pBillboardObject->SetMesh(pMesh);
 				pBillboardObject->SetMaterial(pMaterial);
 
 				float xPosition = x * xmf3Scale.x;
