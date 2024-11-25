@@ -244,7 +244,7 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 	m_pTerrain = new CHeightMapTerrain(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, _T("Image/HeightMap.raw"), 257, 257, 257, 257, xmf3Scale, xmf4Color);
 	m_pSkyBox = new CSkyBox(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature);
 	
-	CShader* bjectsShader = new CShader();
+	CStandardShader* bjectsShader = new CStandardShader();
 	bjectsShader->CreateShader(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature);
 
 	CGameObject* pGunshipModel = CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, "Model/Gunship.bin", bjectsShader, 1);
@@ -686,19 +686,33 @@ void CScene::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera
 	D3D12_GPU_VIRTUAL_ADDRESS d3dcbLightsGpuVirtualAddress = m_pd3dcbLights->GetGPUVirtualAddress();
 	pd3dCommandList->SetGraphicsRootConstantBufferView(2, d3dcbLightsGpuVirtualAddress); //Lights
 
-	if (m_pSkyBox) m_pSkyBox->Render(pd3dCommandList, pCamera);
-	if (m_pTerrain) m_pTerrain->Render(pd3dCommandList, pCamera);
+	if (m_pSkyBox) {
+		m_pSkyBox->m_ppMaterials[0]->m_pShader->Render(pd3dCommandList, pCamera, 0);
+		m_pSkyBox->Render(pd3dCommandList, pCamera);
+	}
+	if (m_pTerrain) {
+		m_pTerrain->m_ppMaterials[0]->m_pShader->Render(pd3dCommandList, pCamera, 0);
+		m_pTerrain->Render(pd3dCommandList, pCamera);
+	}
 	for (int j = 0; j < m_nObject; j++)
 	{
 		if (m_ppObject[j]){
 			if (m_ppObject[j]->life < 7) {
+				if (m_ppObject[j]->m_ppMaterials[0] && m_ppObject[j]->m_ppMaterials[0]->m_pShader) {
+					m_ppObject[j]->m_ppMaterials[0]->m_pShader->Render(pd3dCommandList, pCamera, 0);
+				}
 				m_ppObject[j]->Animate(m_fElapsedTime, NULL);
 				m_ppObject[j]->UpdateTransform(NULL);
 				m_ppObject[j]->Render(pd3dCommandList, pCamera);
 			}
 		}
 	}
-	for (int i = 0; i < skymap_num; ++i) if (skymap[i])skymap[i]->Render(pd3dCommandList, pCamera);
+	for (int i = 0; i < skymap_num; ++i) {
+		if (skymap[i]) {
+			skymap[i]->m_ppMaterials[0]->m_pShader->Render(pd3dCommandList, pCamera, 0);
+			skymap[i]->Render(pd3dCommandList, pCamera);
+		}
+	}
 	for (int i = 0; i < m_nShaders; i++)
 	{
 		m_ppShaders[i]->Render(pd3dCommandList, pCamera);
