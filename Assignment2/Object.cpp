@@ -79,7 +79,7 @@ void CTexture::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList)
 	{
 		for (int i = 0; i < m_nRootParameters; i++)
 		{
-			if (m_pd3dSrvGpuDescriptorHandles[i].ptr && (m_pnRootParameterIndices[i] != -1)) pd3dCommandList->SetGraphicsRootDescriptorTable(m_pnRootParameterIndices[i], m_pd3dSrvGpuDescriptorHandles[i]);
+			pd3dCommandList->SetGraphicsRootDescriptorTable(m_pnRootParameterIndices[i], m_pd3dSrvGpuDescriptorHandles[i]);
 		}
 	}
 	else
@@ -415,7 +415,7 @@ void CGameObject::SetMaterial(int nMaterial, CMaterial* pMaterial)
 void CGameObject::SetMaterial(CMaterial* pMeterial)
 {
 	if (m_pMaterial) m_pMaterial->Release();
-	m_pMaterial = m_pMaterial;
+	m_pMaterial = pMeterial;
 	if (m_pMaterial) m_pMaterial->AddRef();
 }
 
@@ -471,6 +471,7 @@ void CGameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pC
 			}
 		}
 	}
+
 	if (m_pMaterial) {
 		if (m_pMaterial->m_pShader)
 		{
@@ -479,9 +480,17 @@ void CGameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pC
 		}
 		if (m_pMaterial->m_pTexture)
 		{
-			m_pMaterial->m_pTexture->UpdateShaderVariables(pd3dCommandList);
+			m_pMaterial->UpdateShaderVariables(pd3dCommandList);
+		}
+		if (m_ppMeshes)
+		{
+			for (int i = 0; i < m_nMeshes; i++)
+			{
+				if (m_ppMeshes[i]) m_ppMeshes[i]->Render(pd3dCommandList, i);
+			}
 		}
 	}
+
 	if (m_pSibling) m_pSibling->Render(pd3dCommandList, pCamera);
 	if (m_pChild) m_pChild->Render(pd3dCommandList, pCamera);
 }
@@ -1313,6 +1322,13 @@ Skymap::~Skymap() {
 
 CGrassObject::CGrassObject()
 {
+	m_nMeshes = 1;
+	m_ppMeshes = NULL;
+	if (m_nMeshes > 0)
+	{
+		m_ppMeshes = new CMesh * [m_nMeshes];
+		for (int i = 0; i < m_nMeshes; i++)	m_ppMeshes[i] = NULL;
+	}
 }
 
 CGrassObject::~CGrassObject()

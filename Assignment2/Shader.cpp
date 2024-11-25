@@ -799,7 +799,7 @@ void CBillboardObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12Graph
 			{
 				pBillboardObject = new CGrassObject();
 
-				pBillboardObject->SetMesh(pMesh);
+				pBillboardObject->SetMesh(0 , pMesh);
 				pBillboardObject->SetMaterial(pMaterial);
 
 				float xPosition = x * xmf3Scale.x;
@@ -826,7 +826,7 @@ void CBillboardObjectsShader::ReleaseObjects()
 	CObjectsShader::ReleaseObjects();
 }
 
-void CBillboardObjectsShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
+void CBillboardObjectsShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, int nPipelineState)
 {
 	XMFLOAT3 xmf3CameraPosition = pCamera->GetPosition();
 	for (int j = 0; j < m_nObjects; j++)
@@ -834,5 +834,5 @@ void CBillboardObjectsShader::Render(ID3D12GraphicsCommandList* pd3dCommandList,
 		if (m_ppObjects[j]) m_ppObjects[j]->LookTo(xmf3CameraPosition, XMFLOAT3(0.0f, 1.0f, 0.0f));
 	}
 
-	CObjectsShader::Render(pd3dCommandList, pCamera);
+	CObjectsShader::Render(pd3dCommandList, pCamera,nPipelineState);
 }
