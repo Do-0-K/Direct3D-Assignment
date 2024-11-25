@@ -369,19 +369,36 @@ XMFLOAT3 RandomPositionInSphere(XMFLOAT3 xmf3Center, float fRadius, int nColumn,
 
 void CObjectsShader::ReleaseObjects()
 {
+	if (m_ppObjects)
+	{
+		for (int j = 0; j < m_nObjects; j++) if (m_ppObjects[j]) delete m_ppObjects[j];
+		delete[] m_ppObjects;
+	}
 }
 
 void CObjectsShader::AnimateObjects(float fTimeElapsed)
 {
+	for (int j = 0; j < m_nObjects; j++)
+	{
+		m_ppObjects[j]->Animate(fTimeElapsed);
+	}
 }
 
 void CObjectsShader::ReleaseUploadBuffers()
 {
+	if (m_ppObjects)
+	{
+		for (int j = 0; j < m_nObjects; j++) if (m_ppObjects[j]) m_ppObjects[j]->ReleaseUploadBuffers();
+	}
 }
 
 void CObjectsShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, int nPipelineState)
 {
 	CShader::Render(pd3dCommandList, pCamera, nPipelineState);
+	for (int j = 0; j < m_nObjects; j++)
+	{
+		if (m_ppObjects[j]) m_ppObjects[j]->Render(pd3dCommandList, pCamera);
+	}
 }
 
 void CObjectsShader::CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)

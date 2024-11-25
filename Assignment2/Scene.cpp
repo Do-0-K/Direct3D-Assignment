@@ -207,7 +207,7 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 	m_ppObject = new CGunshipObject * [m_nObject];
 
 	m_pDescriptorHeap = new CDescriptorHeap();
-	CreateCbvSrvDescriptorHeaps(pd3dDevice, nObjects + 1+3, 17 + 25 + 1 + 2 + 1 + 1); // Object(17), Player:Mi24(25), Skybox(1), Terrain(2), Skymap(1), Bullet(1)
+	CreateCbvSrvDescriptorHeaps(pd3dDevice, nObjects + 1, 17 + 25 + 1 + 2 + 1 + 1); // Object(17), Player:Mi24(25), Skybox(1), Terrain(2), Skymap(1), Bullet(1)
 	
 	BuildDefaultLightsAndMaterials();
 
@@ -252,6 +252,7 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 	for (int i = 0; i < m_nObject; ++i) {
 		m_ppObject[i] = new CGunshipObject(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature);
 		m_ppObject[i]->SetChild(pGunshipModel);
+		m_ppObject[i]->SetShader(bjectsShader);
 		pGunshipModel->AddRef();
 		if (i % 2 == 0) {
 			m_ppObject[i]->SetPosition(XMFLOAT3(1400.0f, 400.0f, 1400.0f - 100.0f * i));
@@ -687,16 +688,16 @@ void CScene::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera
 
 	if (m_pSkyBox) m_pSkyBox->Render(pd3dCommandList, pCamera);
 	if (m_pTerrain) m_pTerrain->Render(pd3dCommandList, pCamera);
-	for (int j = 0; j < m_nObject; j++)
-	{
-		if (m_ppObject[j]){
-			if (m_ppObject[j]->life < 7) {
-				m_ppObject[j]->Animate(m_fElapsedTime, NULL);
-				m_ppObject[j]->UpdateTransform(NULL);
-				m_ppObject[j]->Render(pd3dCommandList, pCamera);
-			}
-		}
-	}
+	//for (int j = 0; j < m_nObject; j++)
+	//{
+	//	if (m_ppObject[j]){
+	//		if (m_ppObject[j]->life < 7) {
+	//			m_ppObject[j]->Animate(m_fElapsedTime, NULL);
+	//			m_ppObject[j]->UpdateTransform(NULL);
+	//			m_ppObject[j]->Render(pd3dCommandList, pCamera);
+	//		}
+	//	}
+	//}
 	//for (int i = 0; i < skymap_num; ++i) if (skymap[i])skymap[i]->Render(pd3dCommandList, pCamera);
 	for (int i = 0; i < m_nShaders; i++)
 	{

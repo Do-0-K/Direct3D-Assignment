@@ -230,6 +230,7 @@ Texture2D<float4> gtxtTerrainDetailTextures : register(t2);
 Texture2D<float4> gtxtTerrainAlphaTexture : register(t3);
 
 Texture2D gtxtTexture : register(t0);
+
 struct VS_TERRAIN_INPUT
 {
     float3 position : POSITION;
