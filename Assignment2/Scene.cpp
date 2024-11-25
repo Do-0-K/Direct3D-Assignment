@@ -688,17 +688,17 @@ void CScene::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera
 
 	if (m_pSkyBox) m_pSkyBox->Render(pd3dCommandList, pCamera);
 	if (m_pTerrain) m_pTerrain->Render(pd3dCommandList, pCamera);
-	//for (int j = 0; j < m_nObject; j++)
-	//{
-	//	if (m_ppObject[j]){
-	//		if (m_ppObject[j]->life < 7) {
-	//			m_ppObject[j]->Animate(m_fElapsedTime, NULL);
-	//			m_ppObject[j]->UpdateTransform(NULL);
-	//			m_ppObject[j]->Render(pd3dCommandList, pCamera);
-	//		}
-	//	}
-	//}
-	//for (int i = 0; i < skymap_num; ++i) if (skymap[i])skymap[i]->Render(pd3dCommandList, pCamera);
+	for (int j = 0; j < m_nObject; j++)
+	{
+		if (m_ppObject[j]){
+			if (m_ppObject[j]->life < 7) {
+				m_ppObject[j]->Animate(m_fElapsedTime, NULL);
+				m_ppObject[j]->UpdateTransform(NULL);
+				m_ppObject[j]->Render(pd3dCommandList, pCamera);
+			}
+		}
+	}
+	for (int i = 0; i < skymap_num; ++i) if (skymap[i])skymap[i]->Render(pd3dCommandList, pCamera);
 	for (int i = 0; i < m_nShaders; i++)
 	{
 		m_ppShaders[i]->Render(pd3dCommandList, pCamera);
