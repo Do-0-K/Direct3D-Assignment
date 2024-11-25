@@ -150,7 +150,7 @@ VS_SKYBOX_CUBEMAP_OUTPUT VSSkyBox(VS_SKYBOX_CUBEMAP_INPUT input)
     return (output);
 }
 
-TextureCube gtxtSkyCubeTexture : register(t13);
+TextureCube gtxtSkyCubeTexture : register(t4);
 SamplerState gssClamp : register(s1);
 
 float4 PSSkyBox(VS_SKYBOX_CUBEMAP_OUTPUT input) : SV_TARGET
@@ -186,7 +186,7 @@ VS_BULLET_OUTPUT VSBullet(VS_BULLET_INPUT input)
     return output;
 }
 
-Texture2D gtxtBulletTexture : register(t14);
+Texture2D gtxtBulletTexture : register(t5);
 SamplerState gssLinear : register(s0);
 
 float4 PSBullet(VS_BULLET_OUTPUT input) : SV_TARGET
@@ -242,7 +242,8 @@ float4 PSTextured(VS_SPRITE_TEXTURED_OUTPUT input, uint nPrimitiveID : SV_Primit
 }
 */
 Texture2D<float4> gtxtTerrainBaseTexture : register(t1);
-Texture2D<float4> gtxtTerrainDetailTextures : register(t2); //t2, t3, t4
+Texture2D<float4> gtxtTerrainDetailTextures : register(t2);
+Texture2D<float4> gtxtTerrainAlphaTexture : register(t3);
 
 Texture2D gtxtTexture : register(t0);
 SamplerState gSamplerState : register(s0);
@@ -278,7 +279,9 @@ float4 PSTerrain(VS_TERRAIN_OUTPUT input) : SV_TARGET
 {
     float4 cBaseTexColor = gtxtTerrainBaseTexture.Sample(gSamplerState, input.uv0);
     float4 cDetailTexColor = gtxtTerrainDetailTextures.Sample(gSamplerState, input.uv1);
-    float4 cColor = input.color * saturate((cBaseTexColor * 0.5f) + (cDetailTexColor * 0.5f));
+    float fAlpha = gtxtTerrainAlphaTexture.Sample(gSamplerState, input.uv0);
+    
+    float4 cColor = saturate(lerp(cBaseTexColor, cDetailTexColor, fAlpha));
 
     return (cColor);
 }

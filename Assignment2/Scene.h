@@ -106,7 +106,7 @@ public:
 	Skymap** skymap = NULL;
 
 	int									m_nShaders = 0;
-	CObjectsShader** m_ppShaders = NULL;
+	CShader ** m_ppShaders = NULL;
 
 	TwoDText* m_pText = NULL;
 	MenuText* m_menuText = NULL;

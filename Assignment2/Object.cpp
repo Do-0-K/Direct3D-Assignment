@@ -412,6 +412,13 @@ void CGameObject::SetMaterial(int nMaterial, CMaterial* pMaterial)
 	if (m_ppMaterials[nMaterial]) m_ppMaterials[nMaterial]->AddRef();
 }
 
+void CGameObject::SetMaterial(CMaterial* pMeterial)
+{
+	if (m_pMaterial) m_pMaterial->Release();
+	m_pMaterial = m_pMaterial;
+	if (m_pMaterial) m_pMaterial->AddRef();
+}
+
 void CGameObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
 {
 	if (m_mspeed != 0.0f)
@@ -462,6 +469,17 @@ void CGameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pC
 			else {
 				if (m_pMesh) m_pMesh->Render(pd3dCommandList, i);
 			}
+		}
+	}
+	if (m_pMaterial) {
+		if (m_pMaterial->m_pShader)
+		{
+			m_pMaterial->m_pShader->Render(pd3dCommandList, pCamera);
+			m_pMaterial->m_pShader->UpdateShaderVariables(pd3dCommandList);
+		}
+		if (m_pMaterial->m_pTexture)
+		{
+			m_pMaterial->m_pTexture->UpdateShaderVariables(pd3dCommandList);
 		}
 	}
 	if (m_pSibling) m_pSibling->Render(pd3dCommandList, pCamera);
@@ -1088,10 +1106,11 @@ CHeightMapTerrain::CHeightMapTerrain(ID3D12Device* pd3dDevice, ID3D12GraphicsCom
 
 	CreateShaderVariables(pd3dDevice, pd3dCommandList);
 
-	CTexture* pTerrainTexture = new CTexture(2, RESOURCE_TEXTURE2D, 0, 1);
+	CTexture* pTerrainTexture = new CTexture(3, RESOURCE_TEXTURE2D, 0, 1);
 
 	pTerrainTexture->LoadTextureFromDDSFile(pd3dDevice, pd3dCommandList, L"Image/Base_Texture.dds", RESOURCE_TEXTURE2D, 0);
 	pTerrainTexture->LoadTextureFromDDSFile(pd3dDevice, pd3dCommandList, L"Image/Detail_Texture_7.dds", RESOURCE_TEXTURE2D, 1);
+	pTerrainTexture->LoadTextureFromDDSFile(pd3dDevice, pd3dCommandList, L"Image/HeightMap(Alpha).dds", RESOURCE_TEXTURE2D, 2);
 
 	UINT ncbElementBytes = ((sizeof(CB_GAMEOBJECT_INFO) + 255) & ~255); //256ÀÇ ¹è¼ö
 
@@ -1277,9 +1296,9 @@ void CBulletObject::Animate(float fElapsedTime, XMFLOAT4X4* pxmf4x4Parent)
 
 	if ((m_fMovingDistance > m_fBulletEffectiveRange) || (m_fElapsedTimeAfterFire > m_fLockingTime))Reset();
 }
-/// <summary>
+
 /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// </summary>
+
 Skymap::Skymap(CubeMesh* sharedCubeMesh, CMaterial* sharedCubeMaterial) : CGameObject(1)
 {
 	SetMesh(sharedCubeMesh);
@@ -1288,4 +1307,23 @@ Skymap::Skymap(CubeMesh* sharedCubeMesh, CMaterial* sharedCubeMaterial) : CGameO
 
 Skymap::~Skymap() {
 	
+}
+
+/// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CGrassObject::CGrassObject() : CGameObject(1)
+{
+}
+
+CGrassObject::~CGrassObject()
+{
+}
+
+void CGrassObject::Animate(float fDeltaTime)
+{
+	if (m_fRotationAngle <= -1.5f) m_fRotationDelta = 1.0f;
+	if (m_fRotationAngle >= +1.5f) m_fRotationDelta = -1.0f;
+	m_fRotationAngle += m_fRotationDelta * fDeltaTime;
+
+	Rotate(0.0f, 0.0f, m_fRotationAngle);
 }
