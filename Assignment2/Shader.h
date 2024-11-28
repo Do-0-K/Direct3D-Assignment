@@ -192,6 +192,8 @@ public:
 	virtual void CreateShader(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature);
 	virtual void ReleaseUploadBuffers();
 
+	virtual D3D12_INPUT_LAYOUT_DESC CreateInputLayout();
+
 #ifdef _WITH_BATCH_MATERIAL
 	CMaterial* m_ppGrassMaterials[2] = { NULL, NULL };
 	CMaterial* m_ppFlowerMaterials[2] = { NULL, NULL };
