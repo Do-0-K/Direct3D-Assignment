@@ -1205,7 +1205,7 @@ CheckText::CheckText(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCo
 	CTexture* pTexture = new CTexture(1, RESOURCE_TEXTURE2D, 0, 1);
 	pTexture->LoadTextureFromWICFile(pd3dDevice, pd3dCommandList, L"Image/check.jpg", RESOURCE_TEXTURE2D, 0);
 
-	Menu::CreateShaderResourceViews(pd3dDevice, pTexture, 0, 5);
+	Menu::CreateShaderResourceViews(pd3dDevice, pTexture, 1, 5);
 
 	CMaterial* pTextureMaterial = new CMaterial();
 	pTextureMaterial->SetTexture(pTexture);

@@ -207,7 +207,7 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 	m_ppObject = new CGunshipObject * [m_nObject];
 
 	m_pDescriptorHeap = new CDescriptorHeap();
-	CreateCbvSrvDescriptorHeaps(pd3dDevice, nObjects + 3, 17 + 25 + 1 + 2 + 1 + 1 + 6); // Object(17), Player:Mi24(25), Skybox(1), Terrain(2), Skymap(1), Bullet(1), BillBoard(6)
+	CreateCbvSrvDescriptorHeaps(pd3dDevice, nObjects + 10, 21);
 	
 	BuildDefaultLightsAndMaterials();
 
@@ -218,7 +218,7 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 	CTexture* sharedCubeTexture = new CTexture(1, RESOURCE_TEXTURE2D, 0, 1);
 	sharedCubeTexture->LoadTextureFromWICFile(pd3dDevice, pd3dCommandList, L"Image/island.jpg", RESOURCE_TEXTURE2D, 0);
 
-	CreateShaderResourceViews(pd3dDevice, sharedCubeTexture, 0, 7);
+	CreateShaderResourceViews(pd3dDevice, sharedCubeTexture, 1, 7);
 
 	CMaterial* sharedCubeMaterial = new CMaterial();
 	sharedCubeMaterial->SetTexture(sharedCubeTexture);
@@ -271,7 +271,7 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 	CTexture* sharedBulletTexture = new CTexture(1, RESOURCE_TEXTURE2D, 0, 1);
 	sharedBulletTexture->LoadTextureFromWICFile(pd3dDevice, pd3dCommandList, L"Image/bullet.jpg", RESOURCE_TEXTURE2D, 0);
 
-	CreateShaderResourceViews(pd3dDevice, sharedBulletTexture, 0, 7);
+	CreateShaderResourceViews(pd3dDevice, sharedBulletTexture, 2, 7);
 
 	CMaterial* sharedBulletMaterial = new CMaterial();
 	sharedBulletMaterial->SetTexture(sharedBulletTexture);

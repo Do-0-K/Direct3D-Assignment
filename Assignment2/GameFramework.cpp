@@ -532,7 +532,7 @@ void CGameFramework::BuildObjects()
 		CTexture* sharedCubeTexture = new CTexture(1, RESOURCE_TEXTURE2D, 0, 1);
 		sharedCubeTexture->LoadTextureFromWICFile(m_pd3dDevice, m_pd3dCommandList, L"Image/bullet.jpg", RESOURCE_TEXTURE2D, 0);
 
-		CScene::CreateShaderResourceViews(m_pd3dDevice, sharedCubeTexture, 0, 7);
+		CScene::CreateShaderResourceViews(m_pd3dDevice, sharedCubeTexture, 1, 7);
 
 		CMaterial* sharedCubeMaterial = new CMaterial();
 		sharedCubeMaterial->SetTexture(sharedCubeTexture);
