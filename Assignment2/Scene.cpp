@@ -218,7 +218,7 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 	CTexture* sharedCubeTexture = new CTexture(1, RESOURCE_TEXTURE2D, 0, 1);
 	sharedCubeTexture->LoadTextureFromWICFile(pd3dDevice, pd3dCommandList, L"Image/island.jpg", RESOURCE_TEXTURE2D, 0);
 
-	CreateShaderResourceViews(pd3dDevice, sharedCubeTexture, 1, 7);
+	CreateShaderResourceViews(pd3dDevice, sharedCubeTexture, 0, 7);
 
 	CMaterial* sharedCubeMaterial = new CMaterial();
 	sharedCubeMaterial->SetTexture(sharedCubeTexture);
@@ -271,7 +271,7 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 	CTexture* sharedBulletTexture = new CTexture(1, RESOURCE_TEXTURE2D, 0, 1);
 	sharedBulletTexture->LoadTextureFromWICFile(pd3dDevice, pd3dCommandList, L"Image/bullet.jpg", RESOURCE_TEXTURE2D, 0);
 
-	CreateShaderResourceViews(pd3dDevice, sharedBulletTexture, 2, 7);
+	CreateShaderResourceViews(pd3dDevice, sharedBulletTexture, 0, 7);
 
 	CMaterial* sharedBulletMaterial = new CMaterial();
 	sharedBulletMaterial->SetTexture(sharedBulletTexture);
