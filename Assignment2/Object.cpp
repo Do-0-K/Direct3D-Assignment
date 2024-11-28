@@ -16,9 +16,10 @@ CTexture::CTexture(int nTextures, UINT nTextureType, int nSamplers, int nRootPar
 	m_nTextures = nTextures;
 	if (m_nTextures > 0)
 	{
-		m_ppd3dTextureUploadBuffers = new ID3D12Resource * [m_nTextures];
 		m_ppd3dTextures = new ID3D12Resource * [m_nTextures];
-		for (int i = 0; i < m_nTextures; i++) m_ppd3dTextureUploadBuffers[i] = m_ppd3dTextures[i] = NULL;
+		for (int i = 0; i < m_nTextures; i++) m_ppd3dTextures[i] = NULL;
+		m_ppd3dTextureUploadBuffers = new ID3D12Resource * [m_nTextures];
+		for (int i = 0; i < m_nTextures; i++) m_ppd3dTextureUploadBuffers[i] = NULL;
 
 		m_ppstrTextureNames = new _TCHAR[m_nTextures][64];
 		for (int i = 0; i < m_nTextures; i++) m_ppstrTextureNames[i][0] = '\0';
@@ -27,8 +28,11 @@ CTexture::CTexture(int nTextures, UINT nTextureType, int nSamplers, int nRootPar
 		for (int i = 0; i < m_nTextures; i++) m_pd3dSrvGpuDescriptorHandles[i].ptr = NULL;
 
 		m_pnResourceTypes = new UINT[m_nTextures];
+		for (int i = 0; i < m_nTextures; i++) m_pnResourceTypes[i] = -1;
 		m_pdxgiBufferFormats = new DXGI_FORMAT[m_nTextures];
+		for (int i = 0; i < m_nTextures; i++) m_pnResourceTypes[i] = DXGI_FORMAT_UNKNOWN;
 		m_pnBufferElements = new int[m_nTextures];
+		for (int i = 0; i < m_nTextures; i++) m_pnBufferElements[i] = 0;
 	}
 	m_nRootParameters = nRootParameters;
 	if (nRootParameters > 0) m_pnRootParameterIndices = new int[nRootParameters];
@@ -468,25 +472,6 @@ void CGameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pC
 			}
 			else {
 				if (m_pMesh) m_pMesh->Render(pd3dCommandList, i);
-			}
-		}
-	}
-
-	if (m_pMaterial) {
-		if (m_pMaterial->m_pShader)
-		{
-			m_pMaterial->m_pShader->Render(pd3dCommandList, pCamera);
-			m_pMaterial->m_pShader->UpdateShaderVariables(pd3dCommandList);
-		}
-		if (m_pMaterial->m_pTexture)
-		{
-			m_pMaterial->UpdateShaderVariables(pd3dCommandList);
-		}
-		if (m_ppMeshes)
-		{
-			for (int i = 0; i < m_nMeshes; i++)
-			{
-				if (m_ppMeshes[i]) m_ppMeshes[i]->Render(pd3dCommandList, i);
 			}
 		}
 	}
@@ -1320,15 +1305,10 @@ Skymap::~Skymap() {
 
 /// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-CGrassObject::CGrassObject()
+CGrassObject::CGrassObject(CTexturedRectMesh* sharedRectMesh, CMaterial* sharedCubeMaterial) : CGameObject(1)
 {
-	m_nMeshes = 1;
-	m_ppMeshes = NULL;
-	if (m_nMeshes > 0)
-	{
-		m_ppMeshes = new CMesh * [m_nMeshes];
-		for (int i = 0; i < m_nMeshes; i++)	m_ppMeshes[i] = NULL;
-	}
+	SetMesh(sharedRectMesh);
+	SetMaterial(0, sharedCubeMaterial);
 }
 
 CGrassObject::~CGrassObject()

@@ -433,7 +433,7 @@ public:
 class CGrassObject : public CGameObject
 {
 public:
-	CGrassObject();
+	CGrassObject(CTexturedRectMesh* sharedRectMesh, CMaterial* sharedCubeMaterial);
 	virtual ~CGrassObject();
 
 	virtual void Animate(float fDeltaTime);
