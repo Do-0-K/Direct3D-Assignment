@@ -82,7 +82,7 @@ public:
 	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera = NULL);
 
 	int m_nBullet = 0;
-	CBulletObject* m_ppBullet[50];
+	CBulletObject* m_ppBullet[1];
 
 	void FireBullet(CGameObject* pLockedObject);
 	virtual void Animate(float time, XMFLOAT4X4* pxmf4x4Parent);

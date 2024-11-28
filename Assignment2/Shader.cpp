@@ -838,7 +838,7 @@ void CBillboardObjectsShader::Render(ID3D12GraphicsCommandList* pd3dCommandList,
 	XMFLOAT3 xmf3CameraPosition = pCamera->GetPosition();
 	for (int j = 0; j < m_nObjects; j++)
 	{
-		if (m_ppObjects[j]) m_ppObjects[j]->LookTo(xmf3CameraPosition, XMFLOAT3(0.0f, 1.0f, 0.0f));
+		if (m_ppObjects[j]) m_ppObjects[j]->SetLookAt(xmf3CameraPosition, XMFLOAT3(0.0f, 1.0f, 0.0f));
 	}
 
 	CObjectsShader::Render(pd3dCommandList, pCamera,nPipelineState);

@@ -524,7 +524,7 @@ void CGameFramework::BuildObjects()
 		m_pPlayer->SetCameraUpdatedContext(m_pScene->GetTerrain());
 		m_pCamera = m_pPlayer->GetCamera();
 
-		CubeMesh* sharedCubeMesh = new CubeMesh(m_pd3dDevice, m_pd3dCommandList, 0.5f, 0.5f, 0.5f);
+		CubeMesh* sharedCubeMesh = new CubeMesh(m_pd3dDevice, m_pd3dCommandList, 1.5f, 1.5f, 1.5f);
 		CBulletShader* sharedCubeShader = new CBulletShader();
 		sharedCubeShader->CreateShader(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature());
 		sharedCubeShader->CreateShaderVariables(m_pd3dDevice, m_pd3dCommandList);
@@ -538,14 +538,11 @@ void CGameFramework::BuildObjects()
 		sharedCubeMaterial->SetTexture(sharedCubeTexture);
 		sharedCubeMaterial->SetShader(sharedCubeShader);
 
-		m_pPlayer->m_nBullet = 50;
-		for (int i = 0; i < m_pPlayer->m_nBullet; i++)
-		{
-			m_pPlayer->m_ppBullet[i] = new CBulletObject(sharedCubeMesh, sharedCubeMaterial);
-			m_pPlayer->m_ppBullet[i]->setMovingSpeed(180.0f);
-			m_pPlayer->m_ppBullet[i]->SetActive(false);
-			m_pPlayer->m_ppBullet[i]->SetBB();
-		}
+		m_pPlayer->m_nBullet = 1;
+		m_pPlayer->m_ppBullet[0] = new CBulletObject(sharedCubeMesh, sharedCubeMaterial);
+		m_pPlayer->m_ppBullet[0]->setMovingSpeed(180.0f);
+		m_pPlayer->m_ppBullet[0]->SetActive(false);
+		m_pPlayer->m_ppBullet[0]->SetBB();
 		m_pScene->setPlayer(m_pPlayer);
 	}
 	m_pd3dCommandList->Close();

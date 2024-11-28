@@ -277,25 +277,21 @@ void CPlayer::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamer
 		CGameObject::Render(pd3dCommandList, pCamera);
 	}
 	if (m_nBullet != 0) {
-		for (int i = 0; i < 50; i++) if (m_ppBullet[i]->isActive) m_ppBullet[i]->Render(pd3dCommandList, pCamera);
+		if (m_ppBullet[0]->isActive) m_ppBullet[0]->Render(pd3dCommandList, pCamera);
 	}
 }
 
 void CPlayer::Animate(float time, XMFLOAT4X4* pxmf4x4Parent) {
 	if (m_nBullet != 0) {
-		for (int i = 0; i < 50; i++)if (m_ppBullet[i]->isActive)m_ppBullet[i]->Animate(time, pxmf4x4Parent);
+		if (m_ppBullet[0]->isActive)m_ppBullet[0]->Animate(time, pxmf4x4Parent);
 	}
 }
 
 void CPlayer::FireBullet(CGameObject* pLockedObject) {
 	CBulletObject* pBulletObject = NULL;
-	for (int i = 0; i < m_nBullet; i++)
+	if (!m_ppBullet[0]->isActive)
 	{
-		if (!m_ppBullet[i]->isActive)
-		{
-			pBulletObject = m_ppBullet[i];
-			break;
-		}
+		pBulletObject = m_ppBullet[0];
 	}
 
 	if (pBulletObject)
@@ -337,6 +333,9 @@ CAirplanePlayer::CAirplanePlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommand
 
 CAirplanePlayer::~CAirplanePlayer()
 {
+	m_pShader = NULL;
+	m_pMainRotorFrame = NULL;
+	m_pTailRotorFrame = NULL;
 }
 
 void CAirplanePlayer::PrepareAnimate()

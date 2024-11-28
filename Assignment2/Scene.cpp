@@ -207,7 +207,7 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 	m_ppObject = new CGunshipObject * [m_nObject];
 
 	m_pDescriptorHeap = new CDescriptorHeap();
-	CreateCbvSrvDescriptorHeaps(pd3dDevice, nObjects + 3, 17 + 25 + 1 + 2 + 1 + 1+6); // Object(17), Player:Mi24(25), Skybox(1), Terrain(2), Skymap(1), Bullet(1), BillBoard(6)
+	CreateCbvSrvDescriptorHeaps(pd3dDevice, nObjects + 3, 17 + 25 + 1 + 2 + 1 + 1 + 6); // Object(17), Player:Mi24(25), Skybox(1), Terrain(2), Skymap(1), Bullet(1), BillBoard(6)
 	
 	BuildDefaultLightsAndMaterials();
 
@@ -264,7 +264,7 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 		m_ppObject[i]->PrepareAnimate();
 	}
 
-	CubeMesh* sharedBulletMesh = new CubeMesh(pd3dDevice, pd3dCommandList, 0.5f, 0.5f, 0.5f);
+	CubeMesh* sharedBulletMesh = new CubeMesh(pd3dDevice, pd3dCommandList, 1.5f, 1.5f, 1.5f);
 	CBulletShader* sharedBulletShader = new CBulletShader();
 	sharedBulletShader->CreateShader(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature);
 
@@ -278,12 +278,10 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 	sharedBulletMaterial->SetShader(sharedBulletShader);
 
 	for (int i = 0; i < m_nObject; ++i) {
-		for (int j = 0; j < m_ppObject[i]->bullet_num; ++j) {
-			m_ppObject[i]->bullet[j] = new CBulletObject(sharedBulletMesh, sharedBulletMaterial);
-			m_ppObject[i]->bullet[j]->setMovingSpeed(180.0f);
-			m_ppObject[i]->bullet[j]->SetActive(false);
-			m_ppObject[i]->bullet[j]->SetBB();
-		}
+		m_ppObject[i]->bullet[0] = new CBulletObject(sharedBulletMesh, sharedBulletMaterial);
+		m_ppObject[i]->bullet[0]->setMovingSpeed(180.0f);
+		m_ppObject[i]->bullet[0]->SetActive(false);
+		m_ppObject[i]->bullet[0]->SetBB();
 	}
 
 	m_nShaders = 1;
@@ -631,13 +629,11 @@ void CScene::AnimateObjects(float fTimeElapsed)
 	CBulletObject** ppBullets = ((CAirplanePlayer*)m_pPlayer)->m_ppBullet;
 	for (int i = 0; i < m_nObject; ++i) {
 		m_ppObject[i]->UpdateBoundingBox();
-		if (m_ppObject[i]->life < 7) {
-			for (int j = 0; j < m_pPlayer->m_nBullet; ++j) {
-				if (ppBullets[j]->isActive && m_ppObject[i]->bounding_box.Intersects(ppBullets[j]->bullet_box)) {
-					m_ppObject[i]->life++;
-					ppBullets[j]->Reset();
-					break;
-				}
+		if (m_ppObject[i]->life == 0) {
+			if (ppBullets[0]->isActive && m_ppObject[i]->bounding_box.Intersects(ppBullets[0]->bullet_box)) {
+				m_ppObject[i]->life++;
+				ppBullets[0]->Reset();
+				break;
 			}
 			XMFLOAT3 PlayerPos = ((CAirplanePlayer*)m_pPlayer)->GetPosition();
 			if (m_ppObject[i]->targetrange_box.Intersects(m_pPlayer->bounding_box)) {
@@ -687,32 +683,25 @@ void CScene::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera
 	pd3dCommandList->SetGraphicsRootConstantBufferView(2, d3dcbLightsGpuVirtualAddress); //Lights
 
 	if (m_pSkyBox) {
-		m_pSkyBox->m_ppMaterials[0]->m_pShader->Render(pd3dCommandList, pCamera, 0);
 		m_pSkyBox->Render(pd3dCommandList, pCamera);
 	}
 	if (m_pTerrain) {
-		m_pTerrain->m_ppMaterials[0]->m_pShader->Render(pd3dCommandList, pCamera, 0);
 		m_pTerrain->Render(pd3dCommandList, pCamera);
 	}
-	//for (int j = 0; j < m_nObject; j++)
-	//{
-	//	if (m_ppObject[j]){
-	//		if (m_ppObject[j]->life < 7) {
-	//			if (m_ppObject[j]->m_ppMaterials[0] && m_ppObject[j]->m_ppMaterials[0]->m_pShader) {
-	//				m_ppObject[j]->m_ppMaterials[0]->m_pShader->Render(pd3dCommandList, pCamera, 0);
-	//			}
-	//			m_ppObject[j]->Animate(m_fElapsedTime, NULL);
-	//			m_ppObject[j]->UpdateTransform(NULL);
-	//			m_ppObject[j]->Render(pd3dCommandList, pCamera);
-	//		}
-	//	}
-	//}
-	//for (int i = 0; i < skymap_num; ++i) {
-	//	if (skymap[i]) {
-	//		skymap[i]->m_ppMaterials[0]->m_pShader->Render(pd3dCommandList, pCamera, 0);
-	//		skymap[i]->Render(pd3dCommandList, pCamera);
-	//	}
-	//}
+	m_ppObject[0]->m_ppMaterials[0]->m_pShader->Render(pd3dCommandList, pCamera, 0);
+	for (int j = 0; j < m_nObject; j++)
+	{
+		if (m_ppObject[j]->life == 0) {
+			m_ppObject[j]->Animate(m_fElapsedTime, NULL);
+			m_ppObject[j]->UpdateTransform(NULL);
+			m_ppObject[j]->Render(pd3dCommandList, pCamera);
+		}
+	}
+	for (int i = 0; i < skymap_num; ++i) {
+		if (skymap[i]) {
+			skymap[i]->Render(pd3dCommandList, pCamera);
+		}
+	}
 	for (int i = 0; i < m_nShaders; i++)
 	{
 		m_ppShaders[i]->Render(pd3dCommandList, pCamera);

@@ -253,6 +253,7 @@ public:
 	XMFLOAT3 GetUp();
 	XMFLOAT3 GetRight();
 	void LookTo(XMFLOAT3& xmf3LookTo, XMFLOAT3& xmf3Up);
+	void SetLookAt(XMFLOAT3& xmf3Target, XMFLOAT3& xmf3Up);
 
 	void SetPosition(float x, float y, float z);
 	void SetPosition(XMFLOAT3 xmf3Position);
@@ -334,8 +335,8 @@ public:
 	CGunshipObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature);
 	virtual ~CGunshipObject();
 
-	int bullet_num = 50;
-	CBulletObject* bullet[50];
+	int bullet_num = 1;
+	CBulletObject* bullet[1];
 
 private:
 	CGameObject* m_pMainRotorFrame = NULL;

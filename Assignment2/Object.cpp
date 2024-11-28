@@ -531,6 +531,15 @@ void CGameObject::LookTo(XMFLOAT3& xmf3LookTo, XMFLOAT3& xmf3Up)
 	UpdateTransform(NULL);
 }
 
+void CGameObject::SetLookAt(XMFLOAT3& xmf3Target, XMFLOAT3& xmf3Up)
+{
+	XMFLOAT3 xmf3Position(m_xmf4x4World._41, m_xmf4x4World._42, m_xmf4x4World._43);
+	XMFLOAT4X4 mtxLookAt = Matrix4x4::LookAtLH(xmf3Position, xmf3Target, xmf3Up);
+	m_xmf4x4World._11 = mtxLookAt._11; m_xmf4x4World._12 = mtxLookAt._21; m_xmf4x4World._13 = mtxLookAt._31;
+	m_xmf4x4World._21 = mtxLookAt._12; m_xmf4x4World._22 = mtxLookAt._22; m_xmf4x4World._23 = mtxLookAt._32;
+	m_xmf4x4World._31 = mtxLookAt._13; m_xmf4x4World._32 = mtxLookAt._23; m_xmf4x4World._33 = mtxLookAt._33;
+}
+
 void CGameObject::SetBB()
 {
 	bounding_box = BoundingOrientedBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(5.0f, 5.0f, 9.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
@@ -988,6 +997,7 @@ CGunshipObject::CGunshipObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 
 CGunshipObject::~CGunshipObject()
 {
+
 }
 
 void CGunshipObject::PrepareAnimate()
@@ -1010,16 +1020,13 @@ void CGunshipObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
 	}
 	if (iscontact) {
 		shoot_time++;
-		if (shoot_time % 800 == 0) {
+		if (shoot_time % 500 == 0) {
 			FireBullet(m_pLockedObject);
 			m_pLockedObject = NULL;
 			shoot_time = 0;
 		}
 
-		for (int i = 0; i < 50; i++)
-		{
-			if (bullet[i]->isActive) bullet[i]->Animate(fTimeElapsed, pxmf4x4Parent);
-		}
+		if (bullet[0]->isActive) bullet[0]->Animate(fTimeElapsed, pxmf4x4Parent);
 	}
 	else {
 		shoot_time = 0;
@@ -1030,13 +1037,9 @@ void CGunshipObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
 void CGunshipObject::FireBullet(CGameObject* pLockedObject)
 {
 	CBulletObject* pBulletObject = NULL;
-	for (int i = 0; i < bullet_num; i++)
+	if (!bullet[0]->isActive)
 	{
-		if (!bullet[i]->isActive)
-		{
-			pBulletObject = bullet[i];
-			break;
-		}
+		pBulletObject = bullet[0];
 	}
 
 	if (pBulletObject)
@@ -1062,7 +1065,7 @@ void CGunshipObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera*
 {
 	CGameObject::Render(pd3dCommandList, pCamera);
 
-	for (int i = 0; i < 50; i++) if (bullet[i]->isActive) bullet[i]->Render(pd3dCommandList, pCamera);
+	if (bullet[0]->isActive) bullet[0]->Render(pd3dCommandList, pCamera);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
