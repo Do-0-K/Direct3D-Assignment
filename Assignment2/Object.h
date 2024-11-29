@@ -447,6 +447,17 @@ public:
 	float m_fRotationDelta = 1.0f;
 };
 
+/// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class CBillboardObject : public CGameObject
+{
+public:
+	CBillboardObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, float fWidth, float fHeight);
+	virtual ~CBillboardObject();
+
+	virtual void Animate(CCamera* pCamera, float fDeltaTime);
+};
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class CParticleObject : public CGameObject

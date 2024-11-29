@@ -244,7 +244,22 @@ public:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class CParticleShader : public CBillboardObjectsShader
+class CBillboardShader : public CShader
+{
+public:
+	CBillboardShader();
+	virtual ~CBillboardShader();
+
+	virtual D3D12_SHADER_BYTECODE CreateVertexShader(int nPipelineState);
+	virtual D3D12_SHADER_BYTECODE CreatePixelShader(int nPipelineState);
+
+	virtual D3D12_RASTERIZER_DESC CreateRasterizerState(int nPipelineState);
+	virtual D3D12_BLEND_DESC CreateBlendState(int nPipelineState);
+};
+
+/// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class CParticleShader : public CBillboardShader
 {
 public:
 	CParticleShader();

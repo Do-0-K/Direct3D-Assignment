@@ -545,6 +545,8 @@ void CGameFramework::BuildObjects()
 		m_pPlayer->m_ppBullet[0]->SetBB();
 		m_pScene->setPlayer(m_pPlayer);
 	}
+	CreateShaderVariables();
+
 	m_pd3dCommandList->Close();
 	ID3D12CommandList* ppd3dCommandLists[] = { m_pd3dCommandList };
 	m_pd3dCommandQueue->ExecuteCommandLists(1, ppd3dCommandLists);
@@ -559,6 +561,7 @@ void CGameFramework::BuildObjects()
 
 void CGameFramework::ReleaseObjects()
 {
+	ReleaseShaderVariables();
 	if (m_pPlayer) m_pPlayer->Release();
 	if (m_pScene) m_pScene->ReleaseObjects();
 	if (m_pScene) delete m_pScene;
@@ -604,6 +607,36 @@ void CGameFramework::ProcessInput()
 			}
 		}
 		m_pPlayer->Update(m_GameTimer.GetTimeElapsed());
+	}
+}
+
+void CGameFramework::CreateShaderVariables()
+{
+	UINT ncbElementBytes = ((sizeof(CB_FRAMEWORK_INFO) + 255) & ~255); //256ÀÇ ¹è¼ö
+	m_pd3dcbFrameworkInfo = ::CreateBufferResource(m_pd3dDevice, m_pd3dCommandList, NULL, ncbElementBytes, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER | D3D12_RESOURCE_STATE_GENERIC_READ, NULL,1);
+
+	m_pd3dcbFrameworkInfo->Map(0, NULL, (void**)&m_pcbMappedFrameworkInfo);
+}
+
+void CGameFramework::UpdateShaderVariables()
+{
+	m_pcbMappedFrameworkInfo->m_fCurrentTime = m_GameTimer.GetTotalTime();
+	m_pcbMappedFrameworkInfo->m_fElapsedTime = m_GameTimer.GetTimeElapsed();
+	m_pcbMappedFrameworkInfo->m_fSecondsPerFirework = 0.4f;
+	m_pcbMappedFrameworkInfo->m_nFlareParticlesToEmit = 100;
+	m_pcbMappedFrameworkInfo->m_xmf3Gravity = XMFLOAT3(0.0f, -9.8f, 0.0f);
+	m_pcbMappedFrameworkInfo->m_nMaxFlareType2Particles = 15 * 1.5f;
+
+	D3D12_GPU_VIRTUAL_ADDRESS d3dGpuVirtualAddress = m_pd3dcbFrameworkInfo->GetGPUVirtualAddress();
+	m_pd3dCommandList->SetGraphicsRootConstantBufferView(8, d3dGpuVirtualAddress);
+}
+
+void CGameFramework::ReleaseShaderVariables()
+{
+	if (m_pd3dcbFrameworkInfo)
+	{
+		m_pd3dcbFrameworkInfo->Unmap(0, NULL);
+		m_pd3dcbFrameworkInfo->Release();
 	}
 }
 
@@ -668,6 +701,10 @@ void CGameFramework::FrameAdvance()
 	m_pd3dCommandList->ClearDepthStencilView(d3dDsvCPUDescriptorHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);
 	m_pd3dCommandList->OMSetRenderTargets(1, &d3dRtvCPUDescriptorHandle, TRUE, &d3dDsvCPUDescriptorHandle);
 
+	if (m_pScene) m_pScene->OnPrepareRender(m_pd3dCommandList, m_pCamera);
+
+	UpdateShaderVariables();
+
 	if (m_pScene) m_pScene->Render(m_pd3dCommandList, m_pCamera);
 
 #ifdef _WITH_PLAYER_TOP
@@ -685,7 +722,7 @@ void CGameFramework::FrameAdvance()
 
 	if (change == 1) { m_pScene->OnPostRenderParticle(); }
 
-	WaitForGpuComplete();
+	//WaitForGpuComplete();
 
 #ifdef _WITH_PRESENT_PARAMETERS
 	DXGI_PRESENT_PARAMETERS dxgiPresentParameters;

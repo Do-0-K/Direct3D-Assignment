@@ -509,6 +509,7 @@ void CGameObject::CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12Graphics
 
 void CGameObject::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList)
 {
+	if (m_pcbMappedGameObject) XMStoreFloat4x4(&m_pcbMappedGameObject->m_xmf4x4World, XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4World)));
 }
 
 void CGameObject::UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList, XMFLOAT4X4* pxmf4x4World)
@@ -1347,6 +1348,24 @@ void CGrassObject::Animate(float fDeltaTime)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+CBillboardObject::CBillboardObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, float fWidth, float fHeight) : CGameObject(1)
+{
+	CTexturedRectMesh* pMesh = new CTexturedRectMesh(pd3dDevice, pd3dCommandList, fWidth, fHeight, 0.0f, 0.0f, 0.0f, 0.5f);
+	SetMesh(0, pMesh);
+}
+
+CBillboardObject::~CBillboardObject()
+{
+}
+
+void CBillboardObject::Animate(CCamera* pCamera, float fDeltaTime)
+{
+	XMFLOAT3 xmf3CameraPosition = pCamera->GetPosition();
+	SetLookAt(xmf3CameraPosition, XMFLOAT3(0.0f, 1.0f, 0.0f));
+}
+
+/// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 CParticleObject::CParticleObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, XMFLOAT3 xmf3Position, XMFLOAT3 xmf3Velocity, float fLifetime, XMFLOAT3 xmf3Acceleration, XMFLOAT3 xmf3Color, XMFLOAT2 xmf2Size, UINT nMaxParticles) : CGameObject(1)
 {
 	m_nMeshes = 1;
@@ -1376,7 +1395,7 @@ CParticleObject::CParticleObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommand
 	CreateShaderVariables(pd3dDevice, pd3dCommandList);
 
 	CParticleShader* pShader = new CParticleShader();
-	pShader->CreateShader(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature,0);
+	pShader->CreateShader(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, 0);
 	pShader->CreateShaderVariables(pd3dDevice, pd3dCommandList);
 
 	CScene::CreateShaderResourceViews(pd3dDevice, pParticleTexture, 0, 9);
@@ -1422,7 +1441,7 @@ void CParticleObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera
 	for (int i = 0; i < m_nMeshes; i++) if (m_ppMeshes[i]) m_ppMeshes[i]->Renders(pd3dCommandList, 0); //Stream Output
 	for (int i = 0; i < m_nMeshes; i++) if (m_ppMeshes[i]) m_ppMeshes[i]->PostRender(pd3dCommandList, 0); //Stream Output
 
-	if (m_pMaterial && m_pMaterial->m_pShader) m_pMaterial->m_pShader->OnPrepareRender(pd3dCommandList, 1);
+	if (m_ppMaterials[0] && m_ppMaterials[0]->m_pShader) m_ppMaterials[0]->m_pShader->OnPrepareRender(pd3dCommandList, 1);
 
 	for (int i = 0; i < m_nMeshes; i++) if (m_ppMeshes[i]) m_ppMeshes[i]->PreRender(pd3dCommandList, 1); //Draw
 	for (int i = 0; i < m_nMeshes; i++) if (m_ppMeshes[i]) m_ppMeshes[i]->Renders(pd3dCommandList, 1); //Draw

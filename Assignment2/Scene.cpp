@@ -731,8 +731,6 @@ void CScene::AnimateObjects(float fTimeElapsed)
 
 void CScene::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 {
-	OnPrepareRender(pd3dCommandList, pCamera);
-
 	//if (m_pSkyBox) {
 	//	m_pSkyBox->Render(pd3dCommandList, pCamera);
 	//}
@@ -869,6 +867,11 @@ void Start::AnimateObjects(float fTimeElapsed)
 
 void Start::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 {
+	if (m_pText)m_pText->Render(pd3dCommandList, pCamera);
+}
+
+void Start::OnPrepareRender(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
+{
 	if (m_pd3dGraphicsRootSignature) pd3dCommandList->SetGraphicsRootSignature(m_pd3dGraphicsRootSignature);
 	pd3dCommandList->SetDescriptorHeaps(1, &m_pDescriptorHeap->m_pd3dCbvSrvDescriptorHeap);
 
@@ -876,8 +879,6 @@ void Start::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 	pCamera->UpdateShaderVariables(pd3dCommandList);
 
 	UpdateShaderVariables(pd3dCommandList);
-
-	if (m_pText)m_pText->Render(pd3dCommandList, pCamera);
 }
 
 void Start::ReleaseUploadBuffers()
@@ -1079,6 +1080,12 @@ void Menu::ReleaseObjects()
 
 void Menu::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 {
+	if (m_checkText)m_checkText->Render(pd3dCommandList, pCamera);
+	if (m_menuText)m_menuText->Render(pd3dCommandList, pCamera);
+}
+
+void Menu::OnPrepareRender(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
+{
 	if (m_pd3dGraphicsRootSignature) pd3dCommandList->SetGraphicsRootSignature(m_pd3dGraphicsRootSignature);
 	pd3dCommandList->SetDescriptorHeaps(1, &m_pDescriptorHeap->m_pd3dCbvSrvDescriptorHeap);
 
@@ -1086,9 +1093,6 @@ void Menu::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 	pCamera->UpdateShaderVariables(pd3dCommandList);
 
 	UpdateShaderVariables(pd3dCommandList);
-
-	if (m_checkText)m_checkText->Render(pd3dCommandList, pCamera);
-	if (m_menuText)m_menuText->Render(pd3dCommandList, pCamera);
 }
 
 void Menu::ReleaseUploadBuffers()

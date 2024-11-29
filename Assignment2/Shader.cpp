@@ -211,7 +211,9 @@ void CShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 	m_d3dPipelineStateDesc.pRootSignature = pd3dGraphicsRootSignature;
 	m_d3dPipelineStateDesc.VS = CreateVertexShader();
 	m_d3dPipelineStateDesc.PS = CreatePixelShader();
+	m_d3dPipelineStateDesc.GS = CreateGeometryShader();
 	m_d3dPipelineStateDesc.RasterizerState = CreateRasterizerState();
+	m_d3dPipelineStateDesc.StreamOutput = CreateStreamOuputState();
 	m_d3dPipelineStateDesc.BlendState = CreateBlendState();
 	m_d3dPipelineStateDesc.DepthStencilState = CreateDepthStencilState();
 	m_d3dPipelineStateDesc.InputLayout = CreateInputLayout();
@@ -660,7 +662,7 @@ CBillboardObjectsShader::CBillboardObjectsShader()
 {
 	m_pRawFormatImage = new CRawFormatImage(L"Image/ObjectsMap.raw", 257, 257, true);
 
-	int nGrassObjects = 0, nFlowerObjects = 0, nBlacks = 0, nOthers = 0, nTreeObjects[3] = { 0, 0, 0 };
+	int nGrassObjects = 0, nBlacks = 0, nOthers = 0, nTreeObjects[3] = { 0, 0, 0 };
 	for (int z = 2; z <= 254; z++)
 	{
 		for (int x = 2; x <= 254; x++)
@@ -670,8 +672,6 @@ CBillboardObjectsShader::CBillboardObjectsShader()
 			{
 			case 102: nGrassObjects++; break;
 			case 128: nGrassObjects++; break;
-			case 153: nFlowerObjects++; break;
-			case 179: nFlowerObjects++; break;
 			case 204: nTreeObjects[0]++; break;
 			case 225: nTreeObjects[1]++; break;
 			case 255: nTreeObjects[2]++; break;
@@ -680,7 +680,7 @@ CBillboardObjectsShader::CBillboardObjectsShader()
 			}
 		}
 	}
-	m_nObjects = nGrassObjects + nFlowerObjects + nTreeObjects[0] + nTreeObjects[1] + nTreeObjects[2];
+	m_nObjects = nGrassObjects  + nTreeObjects[0] + nTreeObjects[1] + nTreeObjects[2];
 }
 
 CBillboardObjectsShader::~CBillboardObjectsShader()
@@ -737,12 +737,6 @@ void CBillboardObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12Graph
 	ppGrassTextures[1] = new CTexture(1, RESOURCE_TEXTURE2D, 0, 1);
 	ppGrassTextures[1]->LoadTextureFromDDSFile(pd3dDevice, pd3dCommandList, L"Image/Grass02.dds", RESOURCE_TEXTURE2D, 0);
 
-	CTexture* ppFlowerTextures[2];
-	ppFlowerTextures[0] = new CTexture(1, RESOURCE_TEXTURE2D, 0, 1);
-	ppFlowerTextures[0]->LoadTextureFromDDSFile(pd3dDevice, pd3dCommandList, L"Image/Flower01.dds", RESOURCE_TEXTURE2D, 0);
-	ppFlowerTextures[1] = new CTexture(1, RESOURCE_TEXTURE2D, 0, 1);
-	ppFlowerTextures[1]->LoadTextureFromDDSFile(pd3dDevice, pd3dCommandList, L"Image/Flower02.dds", RESOURCE_TEXTURE2D, 0);
-
 	CTexture* ppTreeTextures[3];
 	ppTreeTextures[0] = new CTexture(1, RESOURCE_TEXTURE2D, 0, 1);
 	ppTreeTextures[0]->LoadTextureFromDDSFile(pd3dDevice, pd3dCommandList, L"Image/Tree01.dds", RESOURCE_TEXTURE2D, 0);
@@ -757,12 +751,6 @@ void CBillboardObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12Graph
 	ppGrassMaterials[1] = new CMaterial();
 	ppGrassMaterials[1]->SetTexture(ppGrassTextures[1]);
 
-	CMaterial* ppFlowerMaterials[2];
-	ppFlowerMaterials[0] = new CMaterial();
-	ppFlowerMaterials[0]->SetTexture(ppFlowerTextures[0]);
-	ppFlowerMaterials[1] = new CMaterial();
-	ppFlowerMaterials[1]->SetTexture(ppFlowerTextures[1]);
-
 	CMaterial* ppTreeMaterials[3];
 	ppTreeMaterials[0] = new CMaterial();
 	ppTreeMaterials[0]->SetTexture(ppTreeTextures[0]);
@@ -772,7 +760,6 @@ void CBillboardObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12Graph
 	ppTreeMaterials[2]->SetTexture(ppTreeTextures[2]);
 
 	CTexturedRectMesh* pGrassMesh = new CTexturedRectMesh(pd3dDevice, pd3dCommandList, 8.0f, 8.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-	CTexturedRectMesh* pFlowerMesh = new CTexturedRectMesh(pd3dDevice, pd3dCommandList, 8.0f, 16.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 	CTexturedRectMesh* pTreeMesh01 = new CTexturedRectMesh(pd3dDevice, pd3dCommandList, 24.0f, 36.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 	CTexturedRectMesh* pTreeMesh02 = new CTexturedRectMesh(pd3dDevice, pd3dCommandList, 16.0f, 46.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -784,8 +771,6 @@ void CBillboardObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12Graph
 
 	CScene::CreateShaderResourceViews(pd3dDevice, ppGrassTextures[0], 0, 5);
 	CScene::CreateShaderResourceViews(pd3dDevice, ppGrassTextures[1], 0, 5);
-	CScene::CreateShaderResourceViews(pd3dDevice, ppFlowerTextures[0], 0, 5);
-	CScene::CreateShaderResourceViews(pd3dDevice, ppFlowerTextures[1], 0, 5);
 	CScene::CreateShaderResourceViews(pd3dDevice, ppTreeTextures[0], 0, 5);
 	CScene::CreateShaderResourceViews(pd3dDevice, ppTreeTextures[1], 0, 5);
 	CScene::CreateShaderResourceViews(pd3dDevice, ppTreeTextures[2], 0, 5);
@@ -822,16 +807,6 @@ void CBillboardObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12Graph
 				pMesh = pGrassMesh;
 				pMaterial = ppGrassMaterials[1];
 				fyOffset = 6.0f * 0.5f;
-				break;
-			case 153:
-				pMesh = pFlowerMesh;
-				pMaterial = ppFlowerMaterials[0];
-				fyOffset = 16.0f * 0.5f;
-				break;
-			case 179:
-				pMesh = pFlowerMesh;
-				pMaterial = ppFlowerMaterials[1];
-				fyOffset = 16.0f * 0.5f;
 				break;
 			case 204:
 				pMesh = pTreeMesh01;
@@ -1055,3 +1030,61 @@ void CParticleShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12GraphicsComma
 	CShader::CreateShader(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, 1); //Draw Pipeline State
 }
 
+/// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CBillboardShader::CBillboardShader()
+{
+}
+
+CBillboardShader::~CBillboardShader()
+{
+}
+
+D3D12_SHADER_BYTECODE CBillboardShader::CreateVertexShader(int nPipelineState)
+{
+	return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "VSBillboard", "vs_5_1", &m_pd3dVertexShaderBlob));
+}
+
+D3D12_SHADER_BYTECODE CBillboardShader::CreatePixelShader(int nPipelineState)
+{
+	return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "PSBillboard", "ps_5_1", &m_pd3dPixelShaderBlob));
+}
+
+D3D12_RASTERIZER_DESC CBillboardShader::CreateRasterizerState(int nPipelineState)
+{
+	D3D12_RASTERIZER_DESC d3dRasterizerDesc;
+	::ZeroMemory(&d3dRasterizerDesc, sizeof(D3D12_RASTERIZER_DESC));
+	d3dRasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+	d3dRasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+	d3dRasterizerDesc.FrontCounterClockwise = FALSE;
+	d3dRasterizerDesc.DepthBias = 0;
+	d3dRasterizerDesc.DepthBiasClamp = 0.0f;
+	d3dRasterizerDesc.SlopeScaledDepthBias = 0.0f;
+	d3dRasterizerDesc.DepthClipEnable = TRUE;
+	d3dRasterizerDesc.MultisampleEnable = FALSE;
+	d3dRasterizerDesc.AntialiasedLineEnable = FALSE;
+	d3dRasterizerDesc.ForcedSampleCount = 0;
+	d3dRasterizerDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+
+	return(d3dRasterizerDesc);
+}
+
+D3D12_BLEND_DESC CBillboardShader::CreateBlendState(int nPipelineState)
+{
+	D3D12_BLEND_DESC d3dBlendDesc;
+	::ZeroMemory(&d3dBlendDesc, sizeof(D3D12_BLEND_DESC));
+	d3dBlendDesc.AlphaToCoverageEnable = TRUE;
+	d3dBlendDesc.IndependentBlendEnable = FALSE;
+	d3dBlendDesc.RenderTarget[0].BlendEnable = TRUE;
+	d3dBlendDesc.RenderTarget[0].LogicOpEnable = FALSE;
+	d3dBlendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;
+	d3dBlendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+	d3dBlendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	d3dBlendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	d3dBlendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	d3dBlendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	d3dBlendDesc.RenderTarget[0].LogicOp = D3D12_LOGIC_OP_NOOP;
+	d3dBlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+	return(d3dBlendDesc);
+}

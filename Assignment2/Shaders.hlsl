@@ -630,9 +630,9 @@ void GSParticleDraw(point VS_PARTICLE_DRAW_OUTPUT input[1], inout TriangleStream
 
 float4 PSParticleDraw(GS_PARTICLE_DRAW_OUTPUT input) : SV_TARGET
 {
-    //float4 cColor = gtxtParticleTexture.Sample(gWrapSamplerState, input.uv);
-    //cColor *= input.color;
-    float4 cColor = float4(1.0f, 1.0f, 0.0f, 0.0f);
+    float4 cColor = gtxtParticleTexture.Sample(gssWrap, input.uv);
+    cColor *= input.color;
+    //float4 cColor = float4(1.0f, 1.0f, 0.0f, 0.0f);
     
     return (cColor);
 }
