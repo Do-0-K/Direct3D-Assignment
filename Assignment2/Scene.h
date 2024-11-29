@@ -86,7 +86,11 @@ public:
 
 	virtual bool ProcessInput(UCHAR* pKeysBuffer);
 	virtual void AnimateObjects(float fTimeElapsed);
+
 	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera = NULL);
+	void RenderParticle(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
+	void OnPostRenderParticle();
+	void OnPrepareRender(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
 
 	virtual void ReleaseUploadBuffers();
 
@@ -107,6 +111,9 @@ public:
 
 	int									m_nShaders = 0;
 	CShader ** m_ppShaders = NULL;
+
+	CParticleObject** m_ppParticle = NULL;
+	int							m_nParticle = 0;
 
 	TwoDText* m_pText = NULL;
 	MenuText* m_menuText = NULL;
