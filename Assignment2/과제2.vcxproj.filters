@@ -143,8 +143,5 @@
     <FxCompile Include="Shaders.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
-    <FxCompile Include="Geometry.hlsl">
-      <Filter>Shader</Filter>
-    </FxCompile>
   </ItemGroup>
 </Project>

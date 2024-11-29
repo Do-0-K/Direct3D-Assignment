@@ -287,7 +287,7 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 	m_nParticle = 1;
 	m_ppParticle = new CParticleObject * [m_nParticle];
 
-	m_ppParticle[0] = new CParticleObject(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 65.0f, 0.0f), 0.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(8.0f, 8.0f), MAX_PARTICLES);
+	m_ppParticle[0] = new CParticleObject(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, XMFLOAT3(1000.0f, 400.0f, 1000.0f), XMFLOAT3(0.0f, 65.0f, 0.0f), 0.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(8.0f, 8.0f), MAX_PARTICLES);
 
 	m_nShaders = 1;
 	m_ppShaders = new CShader * [m_nShaders];
@@ -463,7 +463,7 @@ ID3D12RootSignature* CScene::CreateGraphicsRootSignature(ID3D12Device* pd3dDevic
 
 	pd3dDescriptorRanges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	pd3dDescriptorRanges[1].NumDescriptors = 1;
-	pd3dDescriptorRanges[1].BaseShaderRegister = 4; //t13: gtxtSkyBoxTexture
+	pd3dDescriptorRanges[1].BaseShaderRegister = 4; //t4: gtxtSkyBoxTexture
 	pd3dDescriptorRanges[1].RegisterSpace = 0;
 	pd3dDescriptorRanges[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
@@ -475,31 +475,31 @@ ID3D12RootSignature* CScene::CreateGraphicsRootSignature(ID3D12Device* pd3dDevic
 
 	pd3dDescriptorRanges[3].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	pd3dDescriptorRanges[3].NumDescriptors = 3;
-	pd3dDescriptorRanges[3].BaseShaderRegister = 1; //t1~t3: gtxtTerrainBaseTexture, gtxtTerrainDetailTextures
+	pd3dDescriptorRanges[3].BaseShaderRegister = 1; //t1~t3: gtxtTerrainBaseTexture, gtxtTerrainDetailTextures , alpha
 	pd3dDescriptorRanges[3].RegisterSpace = 0;
 	pd3dDescriptorRanges[3].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	pd3dDescriptorRanges[4].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	pd3dDescriptorRanges[4].NumDescriptors = 1;
-	pd3dDescriptorRanges[4].BaseShaderRegister = 5; //t14: bullet
+	pd3dDescriptorRanges[4].BaseShaderRegister = 5; //t5: bullet
 	pd3dDescriptorRanges[4].RegisterSpace = 0;
 	pd3dDescriptorRanges[4].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	pd3dDescriptorRanges[5].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	pd3dDescriptorRanges[5].NumDescriptors = 1;
-	pd3dDescriptorRanges[5].BaseShaderRegister = 15; //t15: gtxtParticleTexture
+	pd3dDescriptorRanges[5].BaseShaderRegister = 13; //t13: gtxtParticleTexture
 	pd3dDescriptorRanges[5].RegisterSpace = 0;
 	pd3dDescriptorRanges[5].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	pd3dDescriptorRanges[6].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	pd3dDescriptorRanges[6].NumDescriptors = 1;
-	pd3dDescriptorRanges[6].BaseShaderRegister = 16; //t16: gtxtRandomTexture
+	pd3dDescriptorRanges[6].BaseShaderRegister = 14; //t14: gtxtRandomTexture
 	pd3dDescriptorRanges[6].RegisterSpace = 0;
 	pd3dDescriptorRanges[6].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	pd3dDescriptorRanges[7].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	pd3dDescriptorRanges[7].NumDescriptors = 1;
-	pd3dDescriptorRanges[7].BaseShaderRegister = 17; //t17: gtxtRandomOnSphereTexture
+	pd3dDescriptorRanges[7].BaseShaderRegister = 15; //t15: gtxtRandomOnSphereTexture
 	pd3dDescriptorRanges[7].RegisterSpace = 0;
 	pd3dDescriptorRanges[7].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
@@ -595,7 +595,7 @@ ID3D12RootSignature* CScene::CreateGraphicsRootSignature(ID3D12Device* pd3dDevic
 	pd3dSamplerDescs[1].RegisterSpace = 0;
 	pd3dSamplerDescs[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
-	D3D12_ROOT_SIGNATURE_FLAGS d3dRootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS | D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS | D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
+	D3D12_ROOT_SIGNATURE_FLAGS d3dRootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | D3D12_ROOT_SIGNATURE_FLAG_ALLOW_STREAM_OUTPUT | D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS | D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS;
 	D3D12_ROOT_SIGNATURE_DESC d3dRootSignatureDesc;
 	::ZeroMemory(&d3dRootSignatureDesc, sizeof(D3D12_ROOT_SIGNATURE_DESC));
 	d3dRootSignatureDesc.NumParameters = _countof(pd3dRootParameters);
@@ -733,30 +733,30 @@ void CScene::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera
 {
 	OnPrepareRender(pd3dCommandList, pCamera);
 
-	if (m_pSkyBox) {
-		m_pSkyBox->Render(pd3dCommandList, pCamera);
-	}
-	if (m_pTerrain) {
-		m_pTerrain->Render(pd3dCommandList, pCamera);
-	}
-	m_ppObject[0]->m_ppMaterials[0]->m_pShader->Render(pd3dCommandList, pCamera, 0);
-	for (int j = 0; j < m_nObject; j++)
-	{
-		if (m_ppObject[j]->life == 0) {
-			m_ppObject[j]->Animate(m_fElapsedTime, NULL);
-			m_ppObject[j]->UpdateTransform(NULL);
-			m_ppObject[j]->Render(pd3dCommandList, pCamera);
-		}
-	}
-	for (int i = 0; i < skymap_num; ++i) {
-		if (skymap[i]) {
-			skymap[i]->Render(pd3dCommandList, pCamera);
-		}
-	}
-	for (int i = 0; i < m_nShaders; i++)
-	{
-		m_ppShaders[i]->Render(pd3dCommandList, pCamera,0);
-	}
+	//if (m_pSkyBox) {
+	//	m_pSkyBox->Render(pd3dCommandList, pCamera);
+	//}
+	//if (m_pTerrain) {
+	//	m_pTerrain->Render(pd3dCommandList, pCamera);
+	//}
+	//m_ppObject[0]->m_ppMaterials[0]->m_pShader->Render(pd3dCommandList, pCamera, 0);
+	//for (int j = 0; j < m_nObject; j++)
+	//{
+	//	if (m_ppObject[j]->life == 0) {
+	//		m_ppObject[j]->Animate(m_fElapsedTime, NULL);
+	//		m_ppObject[j]->UpdateTransform(NULL);
+	//		m_ppObject[j]->Render(pd3dCommandList, pCamera);
+	//	}
+	//}
+	//for (int i = 0; i < skymap_num; ++i) {
+	//	if (skymap[i]) {
+	//		skymap[i]->Render(pd3dCommandList, pCamera);
+	//	}
+	//}
+	//for (int i = 0; i < m_nShaders; i++)
+	//{
+	//	m_ppShaders[i]->Render(pd3dCommandList, pCamera,0);
+	//}
 
 }
 

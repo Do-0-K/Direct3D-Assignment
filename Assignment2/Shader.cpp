@@ -15,7 +15,7 @@ CShader::~CShader()
 {
 	ReleaseShaderVariables();
 
-	if (m_ppd3dPipelineStates)
+	if (m_ppd3dPipelineStates && m_ppd3dPipelineStates[0])
 	{
 		for (int i = 0; i < m_nPipelineStates; i++) if (m_ppd3dPipelineStates[i]) m_ppd3dPipelineStates[i]->Release();
 		delete[] m_ppd3dPipelineStates;
@@ -210,29 +210,49 @@ void CShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 
 	m_d3dPipelineStateDesc.pRootSignature = pd3dGraphicsRootSignature;
 	m_d3dPipelineStateDesc.VS = CreateVertexShader();
-	if (m_nPipelineStates > 1) {
-		m_d3dPipelineStateDesc.GS = CreateGeometryShader();
-		m_d3dPipelineStateDesc.StreamOutput = CreateStreamOuputState();
-	}
 	m_d3dPipelineStateDesc.PS = CreatePixelShader();
 	m_d3dPipelineStateDesc.RasterizerState = CreateRasterizerState();
 	m_d3dPipelineStateDesc.BlendState = CreateBlendState();
 	m_d3dPipelineStateDesc.DepthStencilState = CreateDepthStencilState();
 	m_d3dPipelineStateDesc.InputLayout = CreateInputLayout();
 	m_d3dPipelineStateDesc.SampleMask = UINT_MAX;
-	m_d3dPipelineStateDesc.PrimitiveTopologyType = GetPrimitiveTopologyType();
-	m_d3dPipelineStateDesc.NumRenderTargets = GetNumRenderTargets();
-	m_d3dPipelineStateDesc.RTVFormats[0] = GetRTVFormat();
-	m_d3dPipelineStateDesc.DSVFormat = GetDSVFormat();
+	m_d3dPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	m_d3dPipelineStateDesc.NumRenderTargets = 1;
+	m_d3dPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	m_d3dPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	m_d3dPipelineStateDesc.SampleDesc.Count = 1;
 	m_d3dPipelineStateDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
 	HRESULT hResult = pd3dDevice->CreateGraphicsPipelineState(&m_d3dPipelineStateDesc, __uuidof(ID3D12PipelineState), (void**)&m_ppd3dPipelineStates[0]);
 }
 
+void CShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, int n_PipeLine)
+{
+	::ZeroMemory(&m_d3dPipelineStateDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
+
+	m_d3dPipelineStateDesc.pRootSignature = pd3dGraphicsRootSignature;
+	m_d3dPipelineStateDesc.VS = CreateVertexShader(n_PipeLine);
+	m_d3dPipelineStateDesc.GS = CreateGeometryShader(n_PipeLine);
+	m_d3dPipelineStateDesc.PS = CreatePixelShader(n_PipeLine);
+	m_d3dPipelineStateDesc.StreamOutput = CreateStreamOuputState(n_PipeLine);
+	m_d3dPipelineStateDesc.RasterizerState = CreateRasterizerState(n_PipeLine);
+	m_d3dPipelineStateDesc.BlendState = CreateBlendState(n_PipeLine);
+	m_d3dPipelineStateDesc.DepthStencilState = CreateDepthStencilState(n_PipeLine);
+	m_d3dPipelineStateDesc.InputLayout = CreateInputLayout(n_PipeLine);
+	m_d3dPipelineStateDesc.SampleMask = UINT_MAX;
+	m_d3dPipelineStateDesc.PrimitiveTopologyType = GetPrimitiveTopologyType(n_PipeLine);
+	m_d3dPipelineStateDesc.NumRenderTargets = GetNumRenderTargets(n_PipeLine);
+	m_d3dPipelineStateDesc.RTVFormats[0] = GetRTVFormat(n_PipeLine);
+	m_d3dPipelineStateDesc.DSVFormat = GetDSVFormat(n_PipeLine);
+	m_d3dPipelineStateDesc.SampleDesc.Count = 1;
+	m_d3dPipelineStateDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+
+	HRESULT hResult = pd3dDevice->CreateGraphicsPipelineState(&m_d3dPipelineStateDesc, __uuidof(ID3D12PipelineState), (void**)&m_ppd3dPipelineStates[n_PipeLine]);
+}
+
 void CShader::OnPrepareRender(ID3D12GraphicsCommandList* pd3dCommandList, int nPipelineState)
 {
-	if (m_ppd3dPipelineStates) pd3dCommandList->SetPipelineState(m_ppd3dPipelineStates[nPipelineState]);
+	if (m_ppd3dPipelineStates && m_ppd3dPipelineStates[nPipelineState]) pd3dCommandList->SetPipelineState(m_ppd3dPipelineStates[nPipelineState]);
 }
 
 void CShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, int nPipelineState)
@@ -896,57 +916,51 @@ CParticleShader::~CParticleShader()
 {
 }
 
-void CParticleShader::ChangePipeLineState()
-{
-	if (m_nPipelineStates == 0) { m_nPipelineStates = 1; }
-	else { m_nPipelineStates = 0; }
-}
-
-D3D12_PRIMITIVE_TOPOLOGY_TYPE CParticleShader::GetPrimitiveTopologyType()
+D3D12_PRIMITIVE_TOPOLOGY_TYPE CParticleShader::GetPrimitiveTopologyType(int nPipelineState)
 {
 	return(D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT);
 }
 
-UINT CParticleShader::GetNumRenderTargets()
+UINT CParticleShader::GetNumRenderTargets(int nPipelineState)
 {
-	return((m_nPipelineStates == 0) ? 0 : 1);
+	return((nPipelineState == 0) ? 0 : 1);
 }
 
-DXGI_FORMAT CParticleShader::GetRTVFormat()
+DXGI_FORMAT CParticleShader::GetRTVFormat(int nPipelineState)
 {
-	return((m_nPipelineStates == 0) ? DXGI_FORMAT_UNKNOWN : DXGI_FORMAT_R8G8B8A8_UNORM);
+	return((nPipelineState == 0) ? DXGI_FORMAT_UNKNOWN : DXGI_FORMAT_R8G8B8A8_UNORM);
 }
 
-DXGI_FORMAT CParticleShader::GetDSVFormat()
+DXGI_FORMAT CParticleShader::GetDSVFormat(int nPipelineState)
 {
 	return(DXGI_FORMAT_D24_UNORM_S8_UINT);
 }
 
-D3D12_SHADER_BYTECODE CParticleShader::CreateVertexShader()
+D3D12_SHADER_BYTECODE CParticleShader::CreateVertexShader(int nPipelineState)
 {
-	if (m_nPipelineStates == 0)
-		return(CShader::CompileShaderFromFile(L"Geometry.hlsl", "VSParticleStreamOutput", "vs_5_1", &m_pd3dVertexShaderBlob));
+	if (nPipelineState == 0)
+		return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "VSParticleStreamOutput", "vs_5_1", &m_pd3dVertexShaderBlob));
 	else
-		return(CShader::CompileShaderFromFile(L"Geometry.hlsl", "VSParticleDraw", "vs_5_1", &m_pd3dVertexShaderBlob));
+		return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "VSParticleDraw", "vs_5_1", &m_pd3dVertexShaderBlob));
 }
 
-D3D12_SHADER_BYTECODE CParticleShader::CreateGeometryShader()
+D3D12_SHADER_BYTECODE CParticleShader::CreateGeometryShader(int nPipelineState)
 {
-	if (m_nPipelineStates == 0)
-		return(CShader::CompileShaderFromFile(L"Geometry.hlsl", "GSParticleStreamOutput", "gs_5_1", &m_pd3dGeometryShaderBlob));
+	if (nPipelineState == 0)
+		return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "GSParticleStreamOutput", "gs_5_1", &m_pd3dGeometryShaderBlob));
 	else
-		return(CShader::CompileShaderFromFile(L"Geometry.hlsl", "GSParticleDraw", "gs_5_1", &m_pd3dGeometryShaderBlob));
+		return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "GSParticleDraw", "gs_5_1", &m_pd3dGeometryShaderBlob));
 }
 
-D3D12_SHADER_BYTECODE CParticleShader::CreatePixelShader()
+D3D12_SHADER_BYTECODE CParticleShader::CreatePixelShader(int nPipelineState)
 {
-	if (m_nPipelineStates == 0)
+	if (nPipelineState == 0)
 		return(CShader::CreatePixelShader());
 	else
-		return(CShader::CompileShaderFromFile(L"Geometry.hlsl", "PSParticleDraw", "ps_5_1", &m_pd3dPixelShaderBlob));
+		return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "PSParticleDraw", "ps_5_1", &m_pd3dPixelShaderBlob));
 }
 
-D3D12_BLEND_DESC CParticleShader::CreateBlendState()
+D3D12_BLEND_DESC CParticleShader::CreateBlendState(int nPipelineState)
 {
 	D3D12_BLEND_DESC d3dBlendDesc;
 	::ZeroMemory(&d3dBlendDesc, sizeof(D3D12_BLEND_DESC));
@@ -966,7 +980,7 @@ D3D12_BLEND_DESC CParticleShader::CreateBlendState()
 	return(d3dBlendDesc);
 }
 
-D3D12_DEPTH_STENCIL_DESC CParticleShader::CreateDepthStencilState()
+D3D12_DEPTH_STENCIL_DESC CParticleShader::CreateDepthStencilState(int nPipelineState)
 {
 	D3D12_DEPTH_STENCIL_DESC d3dDepthStencilDesc;
 	::ZeroMemory(&d3dDepthStencilDesc, sizeof(D3D12_DEPTH_STENCIL_DESC));
@@ -988,7 +1002,7 @@ D3D12_DEPTH_STENCIL_DESC CParticleShader::CreateDepthStencilState()
 	return(d3dDepthStencilDesc);
 }
 
-D3D12_INPUT_LAYOUT_DESC CParticleShader::CreateInputLayout()
+D3D12_INPUT_LAYOUT_DESC CParticleShader::CreateInputLayout(int nPipelineState)
 {
 	D3D12_INPUT_LAYOUT_DESC d3dInputLayoutDesc;
 	UINT nInputElementDescs = 4;
@@ -1005,12 +1019,12 @@ D3D12_INPUT_LAYOUT_DESC CParticleShader::CreateInputLayout()
 	return(d3dInputLayoutDesc);
 }
 
-D3D12_STREAM_OUTPUT_DESC CParticleShader::CreateStreamOuputState()
+D3D12_STREAM_OUTPUT_DESC CParticleShader::CreateStreamOuputState(int nPipelineState)
 {
 	D3D12_STREAM_OUTPUT_DESC d3dStreamOutputDesc;
 	::ZeroMemory(&d3dStreamOutputDesc, sizeof(D3D12_STREAM_OUTPUT_DESC));
 
-	if (m_nPipelineStates == 0)
+	if (nPipelineState == 0)
 	{
 		UINT nStreamOutputDecls = 4;
 		D3D12_SO_DECLARATION_ENTRY* pd3dStreamOutputDecls = new D3D12_SO_DECLARATION_ENTRY[nStreamOutputDecls];
@@ -1032,13 +1046,12 @@ D3D12_STREAM_OUTPUT_DESC CParticleShader::CreateStreamOuputState()
 	return(d3dStreamOutputDesc);
 }
 
-void CParticleShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature)
+void CParticleShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature,int n_PipeLine)
 {
 	m_nPipelineStates = 2;
 	m_ppd3dPipelineStates = new ID3D12PipelineState * [m_nPipelineStates];
 
-	CShader::CreateShader(pd3dDevice, pd3dCommandList,pd3dGraphicsRootSignature); //Stream Output Pipeline State
-	ChangePipeLineState();
-	CShader::CreateShader(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature); //Draw Pipeline State
+	CShader::CreateShader(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, 0); //Stream Output Pipeline State
+	CShader::CreateShader(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, 1); //Draw Pipeline State
 }
 
