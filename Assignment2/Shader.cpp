@@ -227,7 +227,7 @@ void CShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 	m_d3dPipelineStateDesc.SampleDesc.Count = 1;
 	m_d3dPipelineStateDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
-	HRESULT hResult = pd3dDevice->CreateGraphicsPipelineState(&m_d3dPipelineStateDesc, __uuidof(ID3D12PipelineState), (void**)&m_ppd3dPipelineStates[m_nPipelineStates]);
+	HRESULT hResult = pd3dDevice->CreateGraphicsPipelineState(&m_d3dPipelineStateDesc, __uuidof(ID3D12PipelineState), (void**)&m_ppd3dPipelineStates[0]);
 }
 
 void CShader::OnPrepareRender(ID3D12GraphicsCommandList* pd3dCommandList, int nPipelineState)
@@ -898,8 +898,8 @@ CParticleShader::~CParticleShader()
 
 void CParticleShader::ChangePipeLineState()
 {
-	if (m_nPipelineStates == 0)m_nPipelineStates = 1;
-	else m_nPipelineStates = 0;
+	if (m_nPipelineStates == 0) { m_nPipelineStates = 1; }
+	else { m_nPipelineStates = 0; }
 }
 
 D3D12_PRIMITIVE_TOPOLOGY_TYPE CParticleShader::GetPrimitiveTopologyType()

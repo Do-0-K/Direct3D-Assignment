@@ -755,7 +755,7 @@ void CScene::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera
 	}
 	for (int i = 0; i < m_nShaders; i++)
 	{
-		m_ppShaders[i]->Render(pd3dCommandList, pCamera);
+		m_ppShaders[i]->Render(pd3dCommandList, pCamera,0);
 	}
 
 }
@@ -843,37 +843,15 @@ void Start::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 
 	m_pDescriptorHeap = new CDescriptorHeap();
 
-	CreateCbvSrvDescriptorHeaps(pd3dDevice, 2, 27 + 17);
+	CreateCbvSrvDescriptorHeaps(pd3dDevice, 0, 2);
 
 	m_pText = new TwoDText(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature);
-
-	m_nShaders = 1;
-	m_ppShaders = new CShader * [m_nShaders];
-
-	CObjectsShader* pObjectsShader = new CObjectsShader();
-	pObjectsShader->CreateShader(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature);
-	pObjectsShader->BuildObjects(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, NULL);
-
-	m_ppShaders[0] = pObjectsShader;
-
-	CreateShaderVariables(pd3dDevice, pd3dCommandList);
 }
 
 void Start::ReleaseObjects()
 {
 	if (m_pd3dGraphicsRootSignature) m_pd3dGraphicsRootSignature->Release();
 	if (m_pDescriptorHeap) delete m_pDescriptorHeap;
-
-	if (m_ppShaders)
-	{
-		for (int i = 0; i < m_nShaders; i++)
-		{
-			m_ppShaders[i]->ReleaseShaderVariables();
-			m_ppShaders[i]->ReleaseObjects();
-			m_ppShaders[i]->Release();
-		}
-		delete[] m_ppShaders;
-	}
 	if (m_pText)m_pText->Release();
 
 	ReleaseShaderVariables();
@@ -886,7 +864,7 @@ bool Start::ProcessInput(UCHAR* pKeysBuffer)
 
 void Start::AnimateObjects(float fTimeElapsed)
 {
-	for (int i = 0; i < m_nShaders; i++) if (m_ppShaders[i]) m_ppShaders[i]->AnimateObjects(fTimeElapsed);
+	
 }
 
 void Start::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
@@ -900,14 +878,11 @@ void Start::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 	UpdateShaderVariables(pd3dCommandList);
 
 	if (m_pText)m_pText->Render(pd3dCommandList, pCamera);
-
-	for (int i = 0; i < m_nShaders; i++) if (m_ppShaders[i]) m_ppShaders[i]->Render(pd3dCommandList, pCamera);
 }
 
 void Start::ReleaseUploadBuffers()
 {
 	if (m_pText)m_pText->ReleaseUploadBuffers();
-	for (int i = 0; i < m_nShaders; i++) m_ppShaders[i]->ReleaseUploadBuffers();
 }
 
 void Start::CreateCbvSrvDescriptorHeaps(ID3D12Device* pd3dDevice, int nConstantBufferViews, int nShaderResourceViews)
@@ -1085,22 +1060,10 @@ void Menu::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3
 
 	m_pDescriptorHeap = new CDescriptorHeap();
 
-	CreateCbvSrvDescriptorHeaps(pd3dDevice, 3, 27);
+	CreateCbvSrvDescriptorHeaps(pd3dDevice, 0, 4);
 
 	m_checkText = new CheckText(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature);
 	m_menuText = new MenuText(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature);
-
-
-	m_nShaders = 1;
-	m_ppShaders = new CShader * [m_nShaders];
-
-	CObjectsShader* pObjectsShader = new CObjectsShader();
-	pObjectsShader->CreateShader(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature);
-	pObjectsShader->BuildObjects(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, NULL);
-
-	m_ppShaders[0] = pObjectsShader;
-
-	CreateShaderVariables(pd3dDevice, pd3dCommandList);
 }
 
 void Menu::ReleaseObjects()
@@ -1108,16 +1071,6 @@ void Menu::ReleaseObjects()
 	if (m_pd3dGraphicsRootSignature) m_pd3dGraphicsRootSignature->Release();
 	if (m_pDescriptorHeap) delete m_pDescriptorHeap;
 
-	if (m_ppShaders)
-	{
-		for (int i = 0; i < m_nShaders; i++)
-		{
-			m_ppShaders[i]->ReleaseShaderVariables();
-			m_ppShaders[i]->ReleaseObjects();
-			m_ppShaders[i]->Release();
-		}
-		delete[] m_ppShaders;
-	}
 	if (m_menuText)m_menuText->Release();
 	if (m_checkText)m_checkText->Release();
 
@@ -1136,15 +1089,12 @@ void Menu::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 
 	if (m_checkText)m_checkText->Render(pd3dCommandList, pCamera);
 	if (m_menuText)m_menuText->Render(pd3dCommandList, pCamera);
-
-	for (int i = 0; i < m_nShaders; i++) if (m_ppShaders[i]) m_ppShaders[i]->Render(pd3dCommandList, pCamera);
 }
 
 void Menu::ReleaseUploadBuffers()
 {
 	if (m_menuText)m_menuText->ReleaseUploadBuffers();
 	if (m_checkText)m_checkText->ReleaseUploadBuffers();
-	for (int i = 0; i < m_nShaders; i++) m_ppShaders[i]->ReleaseUploadBuffers();
 }
 
 void Menu::CreateCbvSrvDescriptorHeaps(ID3D12Device* pd3dDevice, int nConstantBufferViews, int nShaderResourceViews)
