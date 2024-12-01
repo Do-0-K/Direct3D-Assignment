@@ -712,10 +712,10 @@ void CGameFramework::FrameAdvance()
 #endif
 	if (m_pPlayer) m_pPlayer->Render(m_pd3dCommandList, m_pCamera);
 
-	if (change == 1)
-	{
-		m_pScene->RenderParticle(m_pd3dCommandList, m_pCamera);
-	}
+	//if (change == 1)
+	//{
+	//	m_pScene->RenderParticle(m_pd3dCommandList, m_pCamera);
+	//}
 
 	::SynchronizeResourceTransition(m_pd3dCommandList, m_ppd3dSwapChainBackBuffers[m_nSwapChainBufferIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 	::ExecuteCommandList(m_pd3dCommandList, m_pd3dCommandQueue, m_pd3dFence, ++m_nFenceValues[m_nSwapChainBufferIndex], m_hFenceEvent);

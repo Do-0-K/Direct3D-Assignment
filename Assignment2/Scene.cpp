@@ -201,9 +201,10 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 	m_pd3dGraphicsRootSignature = CreateGraphicsRootSignature(pd3dDevice);
 
 	CBillboardObjectsShader* pObjectShader = new CBillboardObjectsShader();
-	int nObjects = pObjectShader->GetNumberOfObjects();
+	int nObjects = pObjectShader->GetNumberOfObjects();	
 
-	m_nObject = num;
+	kill = num;
+	m_nObject =  num;
 	m_ppObject = new CGunshipObject * [m_nObject];
 
 	m_pDescriptorHeap = new CDescriptorHeap();
@@ -691,7 +692,7 @@ void CScene::AnimateObjects(float fTimeElapsed)
 		if (m_ppObject[i]->life == 0) {
 			if (ppBullets[0]->isActive && m_ppObject[i]->bounding_box.Intersects(ppBullets[0]->bullet_box)) {
 				m_ppObject[i]->life=1;
-				//파티클 효과 추가
+				kill--;
 				ppBullets[0]->Reset();
 				break;
 			}
@@ -731,31 +732,35 @@ void CScene::AnimateObjects(float fTimeElapsed)
 
 void CScene::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 {
-	//if (m_pSkyBox) {
-	//	m_pSkyBox->Render(pd3dCommandList, pCamera);
-	//}
-	//if (m_pTerrain) {
-	//	m_pTerrain->Render(pd3dCommandList, pCamera);
-	//}
-	//m_ppObject[0]->m_ppMaterials[0]->m_pShader->Render(pd3dCommandList, pCamera, 0);
-	//for (int j = 0; j < m_nObject; j++)
-	//{
-	//	if (m_ppObject[j]->life == 0) {
-	//		m_ppObject[j]->Animate(m_fElapsedTime, NULL);
-	//		m_ppObject[j]->UpdateTransform(NULL);
-	//		m_ppObject[j]->Render(pd3dCommandList, pCamera);
-	//	}
-	//}
-	//for (int i = 0; i < skymap_num; ++i) {
-	//	if (skymap[i]) {
-	//		skymap[i]->Render(pd3dCommandList, pCamera);
-	//	}
-	//}
-	//for (int i = 0; i < m_nShaders; i++)
-	//{
-	//	m_ppShaders[i]->Render(pd3dCommandList, pCamera,0);
-	//}
-
+	if (kill != 0) {
+		if (m_pSkyBox) {
+			m_pSkyBox->Render(pd3dCommandList, pCamera);
+		}
+		if (m_pTerrain) {
+			m_pTerrain->Render(pd3dCommandList, pCamera);
+		}
+		m_ppObject[0]->m_ppMaterials[0]->m_pShader->Render(pd3dCommandList, pCamera, 0);
+		for (int j = 0; j < m_nObject; j++)
+		{
+			if (m_ppObject[j]->life == 0) {
+				m_ppObject[j]->Animate(m_fElapsedTime, NULL);
+				m_ppObject[j]->UpdateTransform(NULL);
+				m_ppObject[j]->Render(pd3dCommandList, pCamera);
+			}
+		}
+		for (int i = 0; i < skymap_num; ++i) {
+			if (skymap[i]) {
+				skymap[i]->Render(pd3dCommandList, pCamera);
+			}
+		}
+		for (int i = 0; i < m_nShaders; i++)
+		{
+			m_ppShaders[i]->Render(pd3dCommandList, pCamera, 0);
+		}
+	}
+	else {
+		RenderParticle(pd3dCommandList, pCamera);
+	}
 }
 
 void CScene::RenderParticle(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)

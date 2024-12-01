@@ -103,6 +103,8 @@ public:
 public:
 	ID3D12RootSignature* m_pd3dGraphicsRootSignature = NULL;
 
+	int kill = 0;
+
 	int m_nObject = 0;
 	CGunshipObject** m_ppObject = NULL;
 
