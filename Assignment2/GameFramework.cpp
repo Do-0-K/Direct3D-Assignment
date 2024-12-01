@@ -417,6 +417,9 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 			((CAirplanePlayer*)m_pPlayer)->FireBullet(p_SelectObject);
 			p_SelectObject = NULL;
 			break;
+		case 'N':
+			m_pScene->kill = 0;
+			break;
 		default:
 			break;
 		}
@@ -706,7 +709,10 @@ void CGameFramework::FrameAdvance()
 	UpdateShaderVariables();
 
 	if (m_pScene) m_pScene->Render(m_pd3dCommandList, m_pCamera);
-
+	if (m_pScene->kill == 0) {
+		m_pCamera = m_pPlayer->ChangeCamera(SPACESHIP_CAMERA, m_GameTimer.GetTimeElapsed());
+		m_pPlayer->SetPosition(XMFLOAT3(1080.0f, 680.0f, 1175.0f));
+	}
 #ifdef _WITH_PLAYER_TOP
 	m_pd3dCommandList->ClearDepthStencilView(d3dDsvCPUDescriptorHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);
 #endif

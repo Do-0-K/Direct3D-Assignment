@@ -777,15 +777,15 @@ void CScene::Move(int i, int mo)
 {
 	switch (mo) {
 	case 0:
-		m_ppObject[i]->MoveForward(0.03f);
+		m_ppObject[i]->MoveForward(0.1f);
 		break;
 	case 1:
-		m_ppObject[i]->Rotate(0.0, 0.04f, 0.0f);
-		m_ppObject[i]->MoveForward(0.03f);
+		m_ppObject[i]->Rotate(0.0, 0.1f, 0.0f);
+		m_ppObject[i]->MoveForward(0.1f);
 		break;
 	case 2:
 		m_ppObject[i]->Rotate(0.0, -0.04f, 0.0f);
-		m_ppObject[i]->MoveForward(0.03f);
+		m_ppObject[i]->MoveForward(0.1f);
 		break;
 	case 3:
 		m_ppObject[i]->Rotate(0.0f, 0.2f, 0.0f);

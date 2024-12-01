@@ -152,10 +152,10 @@ struct GS_PARTICLE_DRAW_OUTPUT
 #define PARTICLE_TYPE_FLARE02		3
 #define PARTICLE_TYPE_FLARE03		4
 
-#define SHELL_PARTICLE_LIFETIME		5.0f
-#define FLARE01_PARTICLE_LIFETIME	4.5f
-#define FLARE02_PARTICLE_LIFETIME	3.5f
-#define FLARE03_PARTICLE_LIFETIME	4.0f
+#define SHELL_PARTICLE_LIFETIME		4.0f
+#define FLARE01_PARTICLE_LIFETIME	3.5f
+#define FLARE02_PARTICLE_LIFETIME	2.5f
+#define FLARE03_PARTICLE_LIFETIME	3.0f
 
 //                  Define ºû + Á¡
 
@@ -536,7 +536,7 @@ void OutputEmberParticles(VS_PARTICLE_INPUT input, inout PointStream<VS_PARTICLE
 
 void GenerateEmberParticles(VS_PARTICLE_INPUT input, inout PointStream<VS_PARTICLE_INPUT> output)
 {
-    if (input.lifetime <= 0.0f)
+    if (input.lifetime <= 5.0f)
     {
         VS_PARTICLE_INPUT particle = input;
 
