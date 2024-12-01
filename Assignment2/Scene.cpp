@@ -760,14 +760,11 @@ void CScene::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera
 
 void CScene::RenderParticle(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 {
-	//특정 경우에 하면 좋을지도? like 죽었을 때
-	//파티클 오브젝트->Render함수 호출
 	for (int i = 0; i < m_nParticle; i++) m_ppParticle[i]->Render(pd3dCommandList, pCamera);
 }
 
 void CScene::OnPostRenderParticle()
 {
-	//파티클 오브젝트->OnPostRender() 호출
 	for (int i = 0; i < m_nParticle; i++) m_ppParticle[i]->OnPostRender();
 }
 
